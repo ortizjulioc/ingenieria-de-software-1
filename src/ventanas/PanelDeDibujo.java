@@ -18,6 +18,8 @@ public class PanelDeDibujo extends JPanel {
     public PanelDeDibujo() {
         setBackground(Color.WHITE);
 
+        
+        
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
