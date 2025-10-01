@@ -22,6 +22,8 @@ public class VentanaDeDibujo extends JFrame {
         JButton btnColorLinea = new JButton("Color Línea");
         JButton btnColorRelleno = new JButton("Color Relleno");
         JButton btnLimpiar = new JButton("Limpiar");
+        JToggleButton btnTriangulo = new JToggleButton("Triángulo");
+
 
         btnLimpiar.addActionListener(e -> panelDeDibujo.limpiar());
 
@@ -56,6 +58,17 @@ public class VentanaDeDibujo extends JFrame {
                 panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
             }
         });
+        
+        btnTriangulo.addActionListener(e -> {
+    if (btnTriangulo.isSelected()) {
+        btnRect.setSelected(false);
+        btnLinea.setSelected(false);
+        panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRIANGULO);
+    } else if (!btnRect.isSelected() && !btnLinea.isSelected()) {
+        panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
+    }
+});
+
 
         toolbar.add(btnRect);
         toolbar.add(btnLinea);
@@ -63,6 +76,7 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.add(btnColorRelleno);
         toolbar.addSeparator();
         toolbar.add(btnLimpiar);
+        toolbar.add(btnTriangulo);
 
         setLayout(new BorderLayout());
         add(toolbar, BorderLayout.NORTH);
