@@ -18,13 +18,14 @@ public class VentanaDeDibujo extends JFrame {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
 
-        JToggleButton btnRect = new JToggleButton("Rectángulo");
+        
         JToggleButton btnLinea = new JToggleButton("Línea");
         JButton btnColorLinea = new JButton("Color Línea");
         JButton btnColorRelleno = new JButton("Color Relleno");
         JButton btnLimpiar = new JButton("Limpiar");
         JToggleButton btnTriangulo = new JToggleButton("Triángulo");
         JToggleButton btnCirculo = new JToggleButton("Círculo");
+        JToggleButton btnRect = new JToggleButton("Rectángulo");
 
         btnLimpiar.addActionListener(e -> panelDeDibujo.limpiar());
 
