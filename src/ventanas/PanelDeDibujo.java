@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PanelDeDibujo extends JPanel {
-    public enum Herramienta { LIBRE, RECTANGULO, LINEA }
+    public enum Herramienta { LIBRE, RECTANGULO, LINEA, TRIANGULO }
 
     private final List<Figura> figuras = new ArrayList<>();
     private Figura figuraActual;
@@ -28,6 +28,7 @@ public class PanelDeDibujo extends JPanel {
                     case LIBRE -> figuraActual = new DibujoLibre(p);
                     case RECTANGULO -> figuraActual = new Rectangulo(p);
                     case LINEA -> figuraActual = new Linea(p);
+                    case TRIANGULO -> figuraActual = new Triangulo(p);
                 }
                 if (figuraActual != null) {
                     figuraActual.setColorLinea(colorLinea);
