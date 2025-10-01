@@ -7,7 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PanelDeDibujo extends JPanel {
-    public enum Herramienta { LIBRE, RECTANGULO, LINEA, TRIANGULO }
+    //---------------------------------------------------------------------------------------------------------------
+
+    public enum Herramienta {
+        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO
+    }
 
     private final List<Figura> figuras = new ArrayList<>();
     private Figura figuraActual;
@@ -18,18 +22,24 @@ public class PanelDeDibujo extends JPanel {
     public PanelDeDibujo() {
         setBackground(Color.WHITE);
 
-        
-        
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                //----------------------------------------------------------------------------------------------------------------------
                 Point p = e.getPoint();
                 switch (herramientaActual) {
-                    case LIBRE -> figuraActual = new DibujoLibre(p);
-                    case RECTANGULO -> figuraActual = new Rectangulo(p);
-                    case LINEA -> figuraActual = new Linea(p);
-                    case TRIANGULO -> figuraActual = new Triangulo(p);
+                    case LIBRE ->
+                        figuraActual = new DibujoLibre(p);
+                    case RECTANGULO ->
+                        figuraActual = new Rectangulo(p);
+                    case LINEA ->
+                        figuraActual = new Linea(p);
+                    case TRIANGULO ->
+                        figuraActual = new Triangulo(p);
+                    case CIRCULO ->
+                        figuraActual = new Circulo(p);
                 }
+
                 if (figuraActual != null) {
                     figuraActual.setColorLinea(colorLinea);
                     figuraActual.setColorRelleno(colorRelleno);
