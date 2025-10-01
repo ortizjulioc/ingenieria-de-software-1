@@ -4,6 +4,7 @@ import java.awt.*;
 import javax.swing.*;
 
 public class VentanaDeDibujo extends JFrame {
+
     private PanelDeDibujo panelDeDibujo;
 
     public VentanaDeDibujo(String title) throws HeadlessException {
@@ -23,7 +24,7 @@ public class VentanaDeDibujo extends JFrame {
         JButton btnColorRelleno = new JButton("Color Relleno");
         JButton btnLimpiar = new JButton("Limpiar");
         JToggleButton btnTriangulo = new JToggleButton("Triángulo");
-
+        JToggleButton btnCirculo = new JToggleButton("Círculo");
 
         btnLimpiar.addActionListener(e -> panelDeDibujo.limpiar());
 
@@ -58,17 +59,27 @@ public class VentanaDeDibujo extends JFrame {
                 panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
             }
         });
-        
-        btnTriangulo.addActionListener(e -> {
-    if (btnTriangulo.isSelected()) {
-        btnRect.setSelected(false);
-        btnLinea.setSelected(false);
-        panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRIANGULO);
-    } else if (!btnRect.isSelected() && !btnLinea.isSelected()) {
-        panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-    }
-});
 
+        btnTriangulo.addActionListener(e -> {
+            if (btnTriangulo.isSelected()) {
+                btnRect.setSelected(false);
+                btnLinea.setSelected(false);
+                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRIANGULO);
+            } else if (!btnRect.isSelected() && !btnLinea.isSelected()) {
+                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
+            }
+        });
+
+        btnCirculo.addActionListener(e -> {
+            if (btnCirculo.isSelected()) {
+                btnRect.setSelected(false);
+                btnLinea.setSelected(false);
+                btnTriangulo.setSelected(false);
+                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.CIRCULO);
+            } else if (!btnRect.isSelected() && !btnLinea.isSelected() && !btnTriangulo.isSelected()) {
+                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
+            }
+        });
 
         toolbar.add(btnRect);
         toolbar.add(btnLinea);
@@ -77,6 +88,7 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.addSeparator();
         toolbar.add(btnLimpiar);
         toolbar.add(btnTriangulo);
+        toolbar.add(btnCirculo);
 
         setLayout(new BorderLayout());
         add(toolbar, BorderLayout.NORTH);
@@ -84,8 +96,8 @@ public class VentanaDeDibujo extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() ->
-            new VentanaDeDibujo("Mi Ventana De Dibujo").setVisible(true)
+        SwingUtilities.invokeLater(()
+                -> new VentanaDeDibujo("Mi Ventana De Dibujo").setVisible(true)
         );
     }
 }
