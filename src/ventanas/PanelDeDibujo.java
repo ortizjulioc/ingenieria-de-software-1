@@ -10,8 +10,7 @@ public class PanelDeDibujo extends JPanel {
     //---------------------------------------------------------------------------------------------------------------
 
     public enum Herramienta {
-        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO
-    }
+        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO,HEXAGONO,PENTAGONO}
 
     private final List<Figura> figuras = new ArrayList<>();
     private Figura figuraActual;
@@ -36,8 +35,13 @@ public class PanelDeDibujo extends JPanel {
                         figuraActual = new Linea(p);
                     case TRIANGULO ->
                         figuraActual = new Triangulo(p);
+                    case HEXAGONO ->
+                        figuraActual = new Hexagono(p);
                     case CIRCULO ->
                         figuraActual = new Circulo(p);
+                    case PENTAGONO ->
+                        figuraActual = new Pentagono(p);
+                        
                 }
 
                 if (figuraActual != null) {

@@ -7,8 +7,6 @@ import java.util.ArrayList;
 public class DibujoLibre extends Figura {
     private ArrayList<Point> puntos = new ArrayList<>();
 
-    //...
-
     public DibujoLibre(Point puntoInicial) {
         this.puntos.add(puntoInicial);
     }
