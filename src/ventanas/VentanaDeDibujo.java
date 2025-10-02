@@ -26,6 +26,8 @@ public class VentanaDeDibujo extends JFrame {
         JToggleButton btnTriangulo = new JToggleButton("Triángulo");
         JToggleButton btnCirculo = new JToggleButton("Círculo");
         JToggleButton btnRect = new JToggleButton("Rectángulo");
+        JToggleButton btnHexagono = new JToggleButton("Hexagono");
+        JToggleButton btnPentagono = new JToggleButton("Pentagono");
 
         btnLimpiar.addActionListener(e -> panelDeDibujo.limpiar());
 
@@ -71,6 +73,9 @@ public class VentanaDeDibujo extends JFrame {
             }
         });
 
+        
+        
+        
         btnCirculo.addActionListener(e -> {
             if (btnCirculo.isSelected()) {
                 btnRect.setSelected(false);
@@ -81,6 +86,40 @@ public class VentanaDeDibujo extends JFrame {
                 panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
             }
         });
+        
+        
+           btnHexagono.addActionListener(e -> {
+            if (btnHexagono.isSelected()) {
+                btnRect.setSelected(false);
+                btnLinea.setSelected(false);
+                btnTriangulo.setSelected(false);
+                btnCirculo.setSelected(false);
+                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.HEXAGONO);
+            } else if (!btnRect.isSelected() && !btnLinea.isSelected() && !btnTriangulo.isSelected()) {
+                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
+            }
+        });
+        
+           
+             btnPentagono.addActionListener(e -> {
+            if (btnPentagono.isSelected()) {
+                btnRect.setSelected(false);
+                btnLinea.setSelected(false);
+                btnTriangulo.setSelected(false);
+                btnCirculo.setSelected(false);
+                btnHexagono.setSelected(false);
+                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.PENTAGONO);
+            } else if (!btnRect.isSelected() && !btnLinea.isSelected() && !btnTriangulo.isSelected()) {
+                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
+            }
+        });
+           
+           
+        
+        
+        
+        
+        
 
         toolbar.add(btnRect);
         toolbar.add(btnLinea);
@@ -89,7 +128,9 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.addSeparator();
         toolbar.add(btnLimpiar);
         toolbar.add(btnTriangulo);
-        toolbar.add(btnCirculo);
+        toolbar.add(btnCirculo); 
+        toolbar.add(btnHexagono);
+        toolbar.add(btnPentagono);
 
         setLayout(new BorderLayout());
         add(toolbar, BorderLayout.NORTH);
