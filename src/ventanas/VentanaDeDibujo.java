@@ -11,7 +11,7 @@ public class VentanaDeDibujo extends JFrame {
     public VentanaDeDibujo(String title) throws HeadlessException {
         super(title);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(950, 650);
         setLocationRelativeTo(null);
 
         panelDeDibujo = new PanelDeDibujo();
@@ -19,21 +19,53 @@ public class VentanaDeDibujo extends JFrame {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
 
-        JToggleButton btnRect = new JToggleButton("Rectángulo");
-        JToggleButton btnLinea = new JToggleButton("Línea");
-        JToggleButton btnTriangulo = new JToggleButton("Triángulo");
-        JToggleButton btnCirculo = new JToggleButton("Círculo");
-        JToggleButton btnPentagono = new JToggleButton("Pentágono");
-        JToggleButton btnHexagono = new JToggleButton("Hexágono");
-        JToggleButton btnBorrador = new JToggleButton("Borrador");
+        // --- FIGURAS ---
+        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono"};
+        JComboBox<String> comboFiguras = new JComboBox<>(figuras);
+        comboFiguras.setToolTipText("Seleccionar figura");
+        comboFiguras.addActionListener(e -> {
+            String seleccion = (String) comboFiguras.getSelectedItem();
+            switch (seleccion) {
+                case "Rectángulo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.RECTANGULO);
+                case "Línea" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LINEA);
+                case "Triángulo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRIANGULO);
+                case "Círculo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.CIRCULO);
+                case "Pentágono" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.PENTAGONO);
+                case "Hexágono" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.HEXAGONO);
+            }
+        });
+        toolbar.add(new JLabel("Figuras: "));
+        toolbar.add(comboFiguras);
+        toolbar.addSeparator();
 
+        // --- PINCELES ---
+        String[] pinceles = {"Lápiz fino", "Pincel medio", "Pincel grueso"};
+        JComboBox<String> comboPinceles = new JComboBox<>(pinceles);
+        comboPinceles.setToolTipText("Seleccionar tipo de pincel");
+        comboPinceles.addActionListener(e -> {
+            String seleccion = (String) comboPinceles.getSelectedItem();
+            panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
+            switch (seleccion) {
+                case "Lápiz fino" ->
+                    panelDeDibujo.setGrosor(2);
+                case "Pincel medio" ->
+                    panelDeDibujo.setGrosor(6);
+                case "Pincel grueso" ->
+                    panelDeDibujo.setGrosor(12);
+            }
+        });
+        toolbar.add(new JLabel("Pinceles: "));
+        toolbar.add(comboPinceles);
+        toolbar.addSeparator();
+
+        // --- COLORES ---
         JButton btnColorLinea = new JButton("Color Línea");
-        JButton btnColorRelleno = new JButton("Color Relleno");
-        JButton btnLimpiar = new JButton("Limpiar");
-        JButton btnGuardar = new JButton("Guardar");
-
-        btnLimpiar.addActionListener(e -> panelDeDibujo.limpiar());
-
         btnColorLinea.addActionListener(e -> {
             Color nuevo = JColorChooser.showDialog(this, "Elige color de línea", Color.BLACK);
             if (nuevo != null) {
@@ -41,6 +73,7 @@ public class VentanaDeDibujo extends JFrame {
             }
         });
 
+        JButton btnColorRelleno = new JButton("Color Relleno");
         btnColorRelleno.addActionListener(e -> {
             Color nuevo = JColorChooser.showDialog(this, "Elige color de relleno", Color.WHITE);
             if (nuevo != null) {
@@ -48,85 +81,15 @@ public class VentanaDeDibujo extends JFrame {
             }
         });
 
-        btnRect.addActionListener(e -> {
-            if (btnRect.isSelected()) {
-                btnLinea.setSelected(false);
-                btnTriangulo.setSelected(false);
-                btnCirculo.setSelected(false);
-                btnPentagono.setSelected(false);
-                btnHexagono.setSelected(false);
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.RECTANGULO);
-            } else {
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-            }
-        });
+        toolbar.add(btnColorLinea);
+        toolbar.add(btnColorRelleno);
+        toolbar.addSeparator();
 
-        btnLinea.addActionListener(e -> {
-            if (btnLinea.isSelected()) {
-                btnRect.setSelected(false);
-                btnTriangulo.setSelected(false);
-                btnCirculo.setSelected(false);
-                btnPentagono.setSelected(false);
-                btnHexagono.setSelected(false);
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LINEA);
-            } else {
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-            }
-        });
+        // --- ACCIONES ---
+        JButton btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.addActionListener(e -> panelDeDibujo.limpiar());
 
-        btnTriangulo.addActionListener(e -> {
-            if (btnTriangulo.isSelected()) {
-                btnRect.setSelected(false);
-                btnLinea.setSelected(false);
-                btnCirculo.setSelected(false);
-                btnPentagono.setSelected(false);
-                btnHexagono.setSelected(false);
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRIANGULO);
-            } else {
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-            }
-        });
-
-        btnCirculo.addActionListener(e -> {
-            if (btnCirculo.isSelected()) {
-                btnRect.setSelected(false);
-                btnLinea.setSelected(false);
-                btnTriangulo.setSelected(false);
-                btnPentagono.setSelected(false);
-                btnHexagono.setSelected(false);
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.CIRCULO);
-            } else {
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-            }
-        });
-
-        btnPentagono.addActionListener(e -> {
-            if (btnPentagono.isSelected()) {
-                btnRect.setSelected(false);
-                btnLinea.setSelected(false);
-                btnTriangulo.setSelected(false);
-                btnCirculo.setSelected(false);
-                btnHexagono.setSelected(false);
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.PENTAGONO);
-            } else {
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-            }
-        });
-
-        btnHexagono.addActionListener(e -> {
-            if (btnHexagono.isSelected()) {
-                btnRect.setSelected(false);
-                btnLinea.setSelected(false);
-                btnTriangulo.setSelected(false);
-                btnCirculo.setSelected(false);
-                btnPentagono.setSelected(false);
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.HEXAGONO);
-            } else {
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-            }
-        });
-
-        // ✅ Nuevo botón Guardar
+        JButton btnGuardar = new JButton("Guardar");
         btnGuardar.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Guardar dibujo como...");
@@ -135,44 +98,22 @@ public class VentanaDeDibujo extends JFrame {
             int userSelection = fileChooser.showSaveDialog(this);
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 File archivo = fileChooser.getSelectedFile();
-                String formato = "png"; // por defecto
+                String formato = "png";
                 String nombre = archivo.getName().toLowerCase();
                 if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg")) {
                     formato = "jpg";
-                } else if (nombre.endsWith(".png")) {
-                    formato = "png";
-                } else {
+                } else if (!nombre.endsWith(".png")) {
                     archivo = new File(archivo.getAbsolutePath() + ".png");
                 }
                 panelDeDibujo.guardarComoImagen(archivo.getAbsolutePath(), formato);
             }
         });
 
-        btnBorrador.addActionListener(e -> {
-            if (btnBorrador.isSelected()) {
-                btnRect.setSelected(false);
-                btnLinea.setSelected(false);
-                btnTriangulo.setSelected(false);
-                btnCirculo.setSelected(false);
-                btnPentagono.setSelected(false);
-                btnHexagono.setSelected(false);
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.BORRADOR);
-            } else {
-                panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-            }
-        });
+        JButton btnBorrador = new JButton("Borrador");
+        btnBorrador.addActionListener(e -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.BORRADOR));
 
-        toolbar.add(btnRect);
-        toolbar.add(btnLinea);
-        toolbar.add(btnTriangulo);
-        toolbar.add(btnCirculo);
-        toolbar.add(btnPentagono);
-        toolbar.add(btnHexagono);
-        toolbar.add(btnColorLinea);
-        toolbar.add(btnColorRelleno);
-        toolbar.addSeparator();
         toolbar.add(btnLimpiar);
-        toolbar.add(btnGuardar); // ✅ botón de guardar
+        toolbar.add(btnGuardar);
         toolbar.add(btnBorrador);
 
         setLayout(new BorderLayout());
@@ -181,6 +122,12 @@ public class VentanaDeDibujo extends JFrame {
     }
 
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         SwingUtilities.invokeLater(()
                 -> new VentanaDeDibujo("Mi Ventana De Dibujo").setVisible(true)
         );

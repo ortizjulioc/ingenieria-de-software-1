@@ -10,15 +10,18 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 public class PanelDeDibujo extends JPanel {
-    public enum Herramienta { LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO, BORRADOR }
+
+    public enum Herramienta {
+        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO, BORRADOR
+    }
 
     private final List<Figura> figuras = new ArrayList<>();
     private Figura figuraActual;
     private Herramienta herramientaActual = Herramienta.LIBRE;
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = Color.WHITE;
+    private int grosor = 2; // ✅ nuevo: grosor del lápiz/pincel
 
-    // ✅ Posición del cursor (para mostrar el indicador del borrador)
     private Point cursorActual = null;
 
     public PanelDeDibujo() {
@@ -29,19 +32,25 @@ public class PanelDeDibujo extends JPanel {
             public void mousePressed(MouseEvent e) {
                 Point p = e.getPoint();
                 switch (herramientaActual) {
-                    case LIBRE -> figuraActual = new DibujoLibre(p);
-                    case RECTANGULO -> figuraActual = new Rectangulo(p);
-                    case LINEA -> figuraActual = new Linea(p);
-                    case TRIANGULO -> figuraActual = new Triangulo(p);
-                    case CIRCULO -> figuraActual = new Circulo(p);
-                    case PENTAGONO -> figuraActual = new Pentagono(p);
-                    case HEXAGONO -> figuraActual = new Hexagono(p);
-                    case BORRADOR -> figuraActual = new DibujoLibre(p);
+                    case LIBRE, BORRADOR ->
+                        figuraActual = new DibujoLibre(p, grosor);
+                    case RECTANGULO ->
+                        figuraActual = new Rectangulo(p);
+                    case LINEA ->
+                        figuraActual = new Linea(p);
+                    case TRIANGULO ->
+                        figuraActual = new Triangulo(p);
+                    case CIRCULO ->
+                        figuraActual = new Circulo(p);
+                    case PENTAGONO ->
+                        figuraActual = new Pentagono(p);
+                    case HEXAGONO ->
+                        figuraActual = new Hexagono(p);
                 }
 
                 if (figuraActual != null) {
                     if (herramientaActual == Herramienta.BORRADOR) {
-                        figuraActual.setColorLinea(colorRelleno); // borrador pinta con relleno
+                        figuraActual.setColorLinea(colorRelleno);
                     } else {
                         figuraActual.setColorLinea(colorLinea);
                         figuraActual.setColorRelleno(colorRelleno);
@@ -57,7 +66,7 @@ public class PanelDeDibujo extends JPanel {
                     figuraActual.actualizar(e.getPoint());
                     repaint();
                 }
-                cursorActual = e.getPoint(); // mover indicador mientras arrastro
+                cursorActual = e.getPoint();
             }
 
             @Override
@@ -72,13 +81,13 @@ public class PanelDeDibujo extends JPanel {
 
             @Override
             public void mouseMoved(MouseEvent e) {
-                cursorActual = e.getPoint(); // actualizar posición del cursor
+                cursorActual = e.getPoint();
                 repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                cursorActual = null; // ocultar al salir del panel
+                cursorActual = null;
                 repaint();
             }
         };
@@ -99,6 +108,10 @@ public class PanelDeDibujo extends JPanel {
         this.colorRelleno = color;
     }
 
+    public void setGrosor(int grosor) {
+        this.grosor = grosor;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -107,14 +120,14 @@ public class PanelDeDibujo extends JPanel {
             f.dibujar(g);
         }
 
-        // ✅ Dibujar el indicador del borrador
+        // Indicador del borrador
         if (herramientaActual == Herramienta.BORRADOR && cursorActual != null) {
             Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(Color.GRAY); // color guía
-            int grosor = 20; // mismo grosor que el borrador
-            int x = cursorActual.x - grosor / 2;
-            int y = cursorActual.y - grosor / 2;
-            g2.drawOval(x, y, grosor, grosor);
+            g2.setColor(Color.GRAY);
+            int tam = 20;
+            int x = cursorActual.x - tam / 2;
+            int y = cursorActual.y - tam / 2;
+            g2.drawOval(x, y, tam, tam);
         }
     }
 
@@ -123,7 +136,6 @@ public class PanelDeDibujo extends JPanel {
         repaint();
     }
 
-    // ✅ Guardar como PNG/JPG
     public void guardarComoImagen(String ruta, String formato) {
         BufferedImage imagen = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = imagen.createGraphics();

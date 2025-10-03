@@ -4,10 +4,13 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class DibujoLibre extends Figura {
-    private ArrayList<Point> puntos = new ArrayList<>();
 
-    public DibujoLibre(Point puntoInicial) {
+    private ArrayList<Point> puntos = new ArrayList<>();
+    private int grosor;
+
+    public DibujoLibre(Point puntoInicial, int grosor) {
         this.puntos.add(puntoInicial);
+        this.grosor = grosor;
     }
 
     @Override
@@ -15,16 +18,15 @@ public class DibujoLibre extends Figura {
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(colorLinea);
 
-        // ✅ Si el color de línea es igual al color de relleno => es borrador
         if (colorLinea.equals(colorRelleno)) {
-            g2.setStroke(new BasicStroke(20)); // grosor borrador
+            g2.setStroke(new BasicStroke(20)); // borrador fijo
         } else {
-            g2.setStroke(new BasicStroke(2));  // grosor normal
+            g2.setStroke(new BasicStroke(grosor)); // ✅ grosor de pincel/lápiz
         }
 
         for (int i = 1; i < puntos.size(); i++) {
             g2.drawLine(puntos.get(i - 1).x, puntos.get(i - 1).y,
-                        puntos.get(i).x, puntos.get(i).y);
+                    puntos.get(i).x, puntos.get(i).y);
         }
     }
 
