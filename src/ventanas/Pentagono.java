@@ -1,8 +1,6 @@
 package ventanas;
 
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Polygon;
+import java.awt.*;
 
 public class Pentagono extends Figura {
     private Point inicio;
@@ -13,44 +11,44 @@ public class Pentagono extends Figura {
         this.fin = inicio;
     }
 
-    @Override
-    public void dibujar(Graphics g) {
-        int centerX = inicio.x;
-        int centerY = inicio.y;
-
-        
-        double dx = fin.x - inicio.x;
-        double dy = fin.y - inicio.y;
-        double radio = Math.sqrt(dx * dx + dy * dy);
+    private Polygon getPolygon() {
+        int cx = (inicio.x + fin.x) / 2;
+        int cy = (inicio.y + fin.y) / 2;
+        int radio = Math.max(1, Math.min(Math.abs(fin.x - inicio.x), Math.abs(fin.y - inicio.y)) / 2);
 
         int[] xs = new int[5];
         int[] ys = new int[5];
-
-        
-        
-        
-        // figura del pentagono
         for (int i = 0; i < 5; i++) {
-           double angle = Math.toRadians( 72 * i - 20);
-            xs[i] = (int) (centerX + radio * Math.cos(angle));
-            ys[i] = (int) (centerY + radio * Math.sin(angle));
+            double ang = 2 * Math.PI * i / 5 - Math.PI / 2;
+            xs[i] = (int) (cx + radio * Math.cos(ang));
+            ys[i] = (int) (cy + radio * Math.sin(ang));
         }
-
-
-
-        Polygon pentagono = new Polygon(xs, ys, 5);
-
-        // Relleno
-        g.setColor(colorRelleno);
-        g.fillPolygon(pentagono);
-
-        // Contorno
-        g.setColor(colorLinea);
-        g.drawPolygon(pentagono);
+        return new Polygon(xs, ys, 5);
     }
 
     @Override
-    public void actualizar(Point puntoActual) {
-        this.fin = puntoActual;
+    public void dibujar(Graphics g) {
+        Polygon p = getPolygon();
+        g.setColor(colorRelleno);
+        g.fillPolygon(p);
+        g.setColor(colorLinea);
+        g.drawPolygon(p);
+    }
+
+    @Override
+    public void actualizar(Point puntoActual) { this.fin = puntoActual; }
+
+    @Override
+    public Figura clonarConDesplazamiento(int dx, int dy) {
+        Pentagono copia = new Pentagono(new Point(inicio.x + dx, inicio.y + dy));
+        copia.fin = new Point(fin.x + dx, fin.y + dy);
+        copia.setColorLinea(colorLinea);
+        copia.setColorRelleno(colorRelleno);
+        return copia;
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return getPolygon().getBounds();
     }
 }

@@ -1,6 +1,6 @@
 package ventanas;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -20,8 +20,13 @@ public class PanelDeDibujo extends JPanel {
     private Herramienta herramientaActual = Herramienta.LIBRE;
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = Color.WHITE;
-    private int grosor = 2; // ✅ nuevo: grosor del lápiz/pincel
+    private int grosor = 2;
 
+    // selección & portapapeles
+    private Figura figuraSeleccionada = null;
+    private Figura figuraCopiada = null;
+
+    // cursor para borrador
     private Point cursorActual = null;
 
     public PanelDeDibujo() {
@@ -31,9 +36,23 @@ public class PanelDeDibujo extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 Point p = e.getPoint();
+
+                // SHIFT + clic = SELECCIONAR (sin crear figura)
+                if (e.isShiftDown()) {
+                    figuraActual = null;
+                    figuraSeleccionada = obtenerFiguraEnPunto(p);
+                    repaint();
+                    return;
+                }
+
+                // Crear figura según herramienta
                 switch (herramientaActual) {
-                    case LIBRE, BORRADOR ->
+                    case LIBRE ->
                         figuraActual = new DibujoLibre(p, grosor);
+                    case BORRADOR -> {
+                        figuraActual = new DibujoLibre(p, 20);
+                        figuraActual.setColorLinea(colorRelleno); // pinta con color de relleno
+                    }
                     case RECTANGULO ->
                         figuraActual = new Rectangulo(p);
                     case LINEA ->
@@ -49,39 +68,35 @@ public class PanelDeDibujo extends JPanel {
                 }
 
                 if (figuraActual != null) {
-                    if (herramientaActual == Herramienta.BORRADOR) {
-                        figuraActual.setColorLinea(colorRelleno);
-                    } else {
+                    if (herramientaActual != Herramienta.BORRADOR) {
                         figuraActual.setColorLinea(colorLinea);
                         figuraActual.setColorRelleno(colorRelleno);
                     }
                     figuras.add(figuraActual);
+                    figuraSeleccionada = null; // al dibujar, se deselecciona
                 }
+
                 repaint();
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
+                cursorActual = e.getPoint();
                 if (figuraActual != null) {
                     figuraActual.actualizar(e.getPoint());
                     repaint();
                 }
-                cursorActual = e.getPoint();
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (figuraActual != null) {
-                    figuraActual.actualizar(e.getPoint());
-                    figuraActual = null;
-                    repaint();
-                }
-                cursorActual = e.getPoint();
             }
 
             @Override
             public void mouseMoved(MouseEvent e) {
                 cursorActual = e.getPoint();
+                repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                figuraActual = null;
                 repaint();
             }
 
@@ -96,6 +111,7 @@ public class PanelDeDibujo extends JPanel {
         addMouseMotionListener(mouse);
     }
 
+    // ===== API pública usada por la ventana =====
     public void setHerramienta(Herramienta herramienta) {
         this.herramientaActual = herramienta;
     }
@@ -112,12 +128,64 @@ public class PanelDeDibujo extends JPanel {
         this.grosor = grosor;
     }
 
+    public void limpiar() {
+        figuras.clear();
+        figuraSeleccionada = null; // ya no eliminamos figuraCopiada
+        repaint();
+    }
+
+    public void guardarComoImagen(String ruta, String formato) {
+        BufferedImage imagen = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = imagen.createGraphics();
+        paint(g2);
+        g2.dispose();
+        try {
+            ImageIO.write(imagen, formato, new File(ruta));
+            JOptionPane.showMessageDialog(this, "Imagen guardada en: " + ruta);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void copiarFiguraSeleccionada() {
+        if (figuraSeleccionada == null) {
+            JOptionPane.showMessageDialog(this, "Usa SHIFT + Clic sobre una figura para seleccionarla.");
+            return;
+        }
+        figuraCopiada = figuraSeleccionada.clonarConDesplazamiento(0, 0);
+        JOptionPane.showMessageDialog(this, "Figura copiada.");
+    }
+
+    public void pegarFigura() {
+        if (figuraCopiada == null) {
+            JOptionPane.showMessageDialog(this, "No hay figura copiada.");
+            return;
+        }
+        Figura nueva = figuraCopiada.clonarConDesplazamiento(20, 20);
+        if (nueva != null) {
+            figuras.add(nueva);
+            figuraSeleccionada = nueva;
+            repaint();
+        }
+    }
+    // ============================================
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        // Dibujo de todas las figuras
         for (Figura f : figuras) {
             f.dibujar(g);
+        }
+
+        // Marco rojo de selección
+        if (figuraSeleccionada != null) {
+            Rectangle r = figuraSeleccionada.getBounds();
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setColor(Color.RED);
+            g2.setStroke(new BasicStroke(2));
+            g2.drawRect(r.x - 3, r.y - 3, r.width + 6, r.height + 6);
         }
 
         // Indicador del borrador
@@ -125,28 +193,18 @@ public class PanelDeDibujo extends JPanel {
             Graphics2D g2 = (Graphics2D) g;
             g2.setColor(Color.GRAY);
             int tam = 20;
-            int x = cursorActual.x - tam / 2;
-            int y = cursorActual.y - tam / 2;
-            g2.drawOval(x, y, tam, tam);
+            g2.drawOval(cursorActual.x - tam / 2, cursorActual.y - tam / 2, tam, tam);
         }
     }
 
-    public void limpiar() {
-        figuras.clear();
-        repaint();
-    }
-
-    public void guardarComoImagen(String ruta, String formato) {
-        BufferedImage imagen = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = imagen.createGraphics();
-        paint(g2d);
-        g2d.dispose();
-        try {
-            File archivo = new File(ruta);
-            ImageIO.write(imagen, formato, archivo);
-            System.out.println("Imagen guardada en: " + archivo.getAbsolutePath());
-        } catch (Exception e) {
-            e.printStackTrace();
+    // Devuelve la última figura (superior) cuyo bounds contiene el punto
+    private Figura obtenerFiguraEnPunto(Point p) {
+        for (int i = figuras.size() - 1; i >= 0; i--) {
+            Figura f = figuras.get(i);
+            if (f.getBounds().contains(p)) {
+                return f;
+            }
         }
+        return null;
     }
 }
