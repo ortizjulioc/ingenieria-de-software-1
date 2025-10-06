@@ -1,8 +1,6 @@
 package ventanas;
 
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Polygon;
+import java.awt.*;
 
 public class Hexagono extends Figura {
     private Point inicio;
@@ -13,44 +11,44 @@ public class Hexagono extends Figura {
         this.fin = inicio;
     }
 
-    @Override
-    public void dibujar(Graphics g) {
-        int centerX = inicio.x;
-        int centerY = inicio.y;
-
-        
-        double dx = fin.x - inicio.x;
-        double dy = fin.y - inicio.y;
-        double radio = Math.sqrt(dx * dx + dy * dy);
+    private Polygon getPolygon() {
+        int cx = (inicio.x + fin.x) / 2;
+        int cy = (inicio.y + fin.y) / 2;
+        int radio = Math.max(1, Math.min(Math.abs(fin.x - inicio.x), Math.abs(fin.y - inicio.y)) / 2);
 
         int[] xs = new int[6];
         int[] ys = new int[6];
-
-        
-        
-        
-        // figura del hexagono
         for (int i = 0; i < 6; i++) {
-           double angle = Math.toRadians( 60 * i - 0);
-            xs[i] = (int) (centerX + radio * Math.cos(angle));
-            ys[i] = (int) (centerY + radio * Math.sin(angle));
+            double ang = 2 * Math.PI * i / 6 - Math.PI / 2;
+            xs[i] = (int) (cx + radio * Math.cos(ang));
+            ys[i] = (int) (cy + radio * Math.sin(ang));
         }
-
-
-
-        Polygon hexagono = new Polygon(xs, ys, 6);
-
-        // Relleno
-        g.setColor(colorRelleno);
-        g.fillPolygon(hexagono);
-
-        // Contorno
-        g.setColor(colorLinea);
-        g.drawPolygon(hexagono);
+        return new Polygon(xs, ys, 6);
     }
 
     @Override
-    public void actualizar(Point puntoActual) {
-        this.fin = puntoActual;
+    public void dibujar(Graphics g) {
+        Polygon p = getPolygon();
+        g.setColor(colorRelleno);
+        g.fillPolygon(p);
+        g.setColor(colorLinea);
+        g.drawPolygon(p);
+    }
+
+    @Override
+    public void actualizar(Point puntoActual) { this.fin = puntoActual; }
+
+    @Override
+    public Figura clonarConDesplazamiento(int dx, int dy) {
+        Hexagono copia = new Hexagono(new Point(inicio.x + dx, inicio.y + dy));
+        copia.fin = new Point(fin.x + dx, fin.y + dy);
+        copia.setColorLinea(colorLinea);
+        copia.setColorRelleno(colorRelleno);
+        return copia;
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return getPolygon().getBounds();
     }
 }

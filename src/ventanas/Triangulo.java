@@ -1,8 +1,6 @@
 package ventanas;
 
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Polygon;
+import java.awt.*;
 
 public class Triangulo extends Figura {
     private Point inicio;
@@ -15,40 +13,43 @@ public class Triangulo extends Figura {
 
     @Override
     public void dibujar(Graphics g) {
-        // Calculamos los tres puntos del triángulo
-        int x1 = inicio.x;
-        int y1 = inicio.y;
-        int x2 = fin.x;
-        int y2 = fin.y;
-
-        // Punto base izquierda
-        int bx1 = x1;
-        int by1 = y2;
-
-        // Punto base derecha
-        int bx2 = x2;
-        int by2 = y2;
-
-        // Punto superior (vértice)
-        int vx = (x1 + x2) / 2;
-        int vy = y1;
-
-        int[] xs = {bx1, bx2, vx};
-        int[] ys = {by1, by2, vy};
-
-        Polygon triangulo = new Polygon(xs, ys, 3);
-
-        // Relleno
+        Polygon poly = getPolygon();
         g.setColor(colorRelleno);
-        g.fillPolygon(triangulo);
-
-        // Contorno
+        g.fillPolygon(poly);
         g.setColor(colorLinea);
-        g.drawPolygon(triangulo);
+        g.drawPolygon(poly);
+    }
+
+    private Polygon getPolygon() {
+        int x1 = inicio.x, y1 = inicio.y;
+        int x2 = fin.x, y2 = fin.y;
+
+        int bx1 = x1, by1 = y2;      // base izquierda
+        int bx2 = x2, by2 = y2;      // base derecha
+        int vx  = (x1 + x2) / 2;     // vértice superior/ inferior según arrastre
+        int vy  = y1;
+
+        Polygon p = new Polygon();
+        p.addPoint(bx1, by1);
+        p.addPoint(bx2, by2);
+        p.addPoint(vx, vy);
+        return p;
     }
 
     @Override
-    public void actualizar(Point puntoActual) {
-        this.fin = puntoActual;
+    public void actualizar(Point puntoActual) { this.fin = puntoActual; }
+
+    @Override
+    public Figura clonarConDesplazamiento(int dx, int dy) {
+        Triangulo copia = new Triangulo(new Point(inicio.x + dx, inicio.y + dy));
+        copia.fin = new Point(fin.x + dx, fin.y + dy);
+        copia.setColorLinea(colorLinea);
+        copia.setColorRelleno(colorRelleno);
+        return copia;
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return getPolygon().getBounds();
     }
 }
