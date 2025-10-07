@@ -14,7 +14,7 @@ import java.awt.Rectangle;
  * @author Yaneyri
  */
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------
 public class Estrella extends Figura {
     
     private Point inicio;
