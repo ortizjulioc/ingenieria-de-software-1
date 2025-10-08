@@ -24,7 +24,7 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.setBackground(new Color(245, 247, 250));
 
         // === MENU FIGURAS ===
-        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono", "Estrella"};
+        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono", "Estrella", "Óvalo"};
         JComboBox<String> comboFiguras = new JComboBox<>(figuras);
         comboFiguras.setToolTipText("Seleccionar figura geométrica");
         comboFiguras.addActionListener(e -> {
@@ -37,6 +37,7 @@ public class VentanaDeDibujo extends JFrame {
                 case "Pentágono" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.PENTAGONO);
                 case "Hexágono" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.HEXAGONO);
                 case "Estrella" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ESTRELLA);
+                case "Óvalo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.OVALO);
             }
         });
         toolbar.add(makeSection("Figuras"));
