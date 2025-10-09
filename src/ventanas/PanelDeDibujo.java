@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 public class PanelDeDibujo extends JPanel {
 
     public enum Herramienta {
-        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO,ESTRELLA, BORRADOR
+        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO,ESTRELLA, BORRADOR, OVALO, ROMBO
     }
 
     private final List<Figura> figuras = new ArrayList<>();
@@ -67,6 +67,10 @@ public class PanelDeDibujo extends JPanel {
                         figuraActual = new Hexagono(p);
                     case ESTRELLA ->
                         figuraActual = new Estrella(p);
+                    case OVALO ->
+                        figuraActual = new Ovalo(p);
+                    case ROMBO ->
+                        figuraActual = new Rombo(p); // AQUÍ ESTABA FALTANDO
                 }
 
                 if (figuraActual != null) {

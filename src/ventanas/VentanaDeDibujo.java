@@ -17,14 +17,12 @@ public class VentanaDeDibujo extends JFrame {
 
         panelDeDibujo = new PanelDeDibujo();
 
-        // === TOOLBAR PRINCIPAL ===
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         toolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
         toolbar.setBackground(new Color(245, 247, 250));
 
-        // === MENU FIGURAS ===
-        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono", "Estrella"};
+        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono", "Estrella", "Óvalo", "Rombo"};
         JComboBox<String> comboFiguras = new JComboBox<>(figuras);
         comboFiguras.setToolTipText("Seleccionar figura geométrica");
         comboFiguras.addActionListener(e -> {
@@ -37,13 +35,14 @@ public class VentanaDeDibujo extends JFrame {
                 case "Pentágono" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.PENTAGONO);
                 case "Hexágono" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.HEXAGONO);
                 case "Estrella" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ESTRELLA);
+                case "Óvalo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.OVALO);
+                case "Rombo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ROMBO);
             }
         });
         toolbar.add(makeSection("Figuras"));
         toolbar.add(comboFiguras);
         toolbar.addSeparator();
 
-        // === MENU PINCELES ===
         String[] pinceles = {"Dibujo Libre", "Pincel Fino", "Pincel Medio", "Pincel Grueso", "Borrador"};
         JComboBox<String> comboPinceles = new JComboBox<>(pinceles);
         comboPinceles.setToolTipText("Seleccionar tipo de pincel");
@@ -73,7 +72,6 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.add(comboPinceles);
         toolbar.addSeparator();
 
-        // === MENU COLORES ===
         JButton btnColorLinea = new JButton("Color Línea");
         JButton btnColorRelleno = new JButton("Color Relleno");
         btnColorLinea.addActionListener(e -> {
@@ -89,7 +87,6 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.add(btnColorRelleno);
         toolbar.addSeparator();
 
-        // === MENU ACCIONES ===
         JButton btnCopiar = new JButton("Copiar");
         JButton btnPegar = new JButton("Pegar");
         JButton btnLimpiar = new JButton("Limpiar");
@@ -124,15 +121,11 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.add(btnLimpiar);
         toolbar.add(btnGuardar);
 
-        // === ENSAMBLAR ===
         setLayout(new BorderLayout());
         add(toolbar, BorderLayout.NORTH);
         add(panelDeDibujo, BorderLayout.CENTER);
     }
 
-    /**
-     * Crea una etiqueta de sección estilizada para el toolbar.
-     */
     private JLabel makeSection(String text) {
         JLabel label = new JLabel(text);
         label.setFont(label.getFont().deriveFont(Font.BOLD, 13f));
