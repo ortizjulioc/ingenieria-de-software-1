@@ -12,7 +12,8 @@ import javax.imageio.ImageIO;
 public class PanelDeDibujo extends JPanel {
 
     public enum Herramienta {
-        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO,ESTRELLA, BORRADOR, OVALO, ROMBO
+        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO, 
+        ESTRELLA, BORRADOR, OVALO, ROMBO, FLECHA_ARRIBA, FLECHA_ABAJO, FLECHA_DERECHA, FLECHA_IZQUIERDA
     }
 
     private final List<Figura> figuras = new ArrayList<>();
@@ -22,11 +23,9 @@ public class PanelDeDibujo extends JPanel {
     private Color colorRelleno = Color.WHITE;
     private int grosor = 2;
 
-    // selección & portapapeles
     private Figura figuraSeleccionada = null;
     private Figura figuraCopiada = null;
 
-    // cursor para borrador
     private Point cursorActual = null;
 
     public PanelDeDibujo() {
@@ -37,7 +36,6 @@ public class PanelDeDibujo extends JPanel {
             public void mousePressed(MouseEvent e) {
                 Point p = e.getPoint();
 
-                // SHIFT + clic = SELECCIONAR (sin crear figura)
                 if (e.isShiftDown()) {
                     figuraActual = null;
                     figuraSeleccionada = obtenerFiguraEnPunto(p);
@@ -45,32 +43,25 @@ public class PanelDeDibujo extends JPanel {
                     return;
                 }
 
-                // Crear figura según herramienta
                 switch (herramientaActual) {
-                    case LIBRE ->
-                        figuraActual = new DibujoLibre(p, grosor);
+                    case LIBRE -> figuraActual = new DibujoLibre(p, grosor);
                     case BORRADOR -> {
                         figuraActual = new DibujoLibre(p, 20);
-                        figuraActual.setColorLinea(colorRelleno); // pinta con color de relleno
+                        figuraActual.setColorLinea(colorRelleno);
                     }
-                    case RECTANGULO ->
-                        figuraActual = new Rectangulo(p);
-                    case LINEA ->
-                        figuraActual = new Linea(p);
-                    case TRIANGULO ->
-                        figuraActual = new Triangulo(p);
-                    case CIRCULO ->
-                        figuraActual = new Circulo(p);
-                    case PENTAGONO ->
-                        figuraActual = new Pentagono(p);
-                    case HEXAGONO ->
-                        figuraActual = new Hexagono(p);
-                    case ESTRELLA ->
-                        figuraActual = new Estrella(p);
-                    case OVALO ->
-                        figuraActual = new Ovalo(p);
-                    case ROMBO ->
-                        figuraActual = new Rombo(p); // AQUÍ ESTABA FALTANDO
+                    case RECTANGULO -> figuraActual = new Rectangulo(p);
+                    case LINEA -> figuraActual = new Linea(p);
+                    case TRIANGULO -> figuraActual = new Triangulo(p);
+                    case CIRCULO -> figuraActual = new Circulo(p);
+                    case PENTAGONO -> figuraActual = new Pentagono(p);
+                    case HEXAGONO -> figuraActual = new Hexagono(p);
+                    case ESTRELLA -> figuraActual = new Estrella(p);
+                    case OVALO -> figuraActual = new Ovalo(p);
+                    case ROMBO -> figuraActual = new Rombo(p);
+                    case FLECHA_ARRIBA -> figuraActual = new FlechaArriba(p);
+                    case FLECHA_ABAJO -> figuraActual = new FlechaAbajo(p);
+                    case FLECHA_DERECHA -> figuraActual = new FlechaDerecha(p);
+                    case FLECHA_IZQUIERDA -> figuraActual = new FlechaIzquierda(p);
                 }
 
                 if (figuraActual != null) {
@@ -79,7 +70,7 @@ public class PanelDeDibujo extends JPanel {
                         figuraActual.setColorRelleno(colorRelleno);
                     }
                     figuras.add(figuraActual);
-                    figuraSeleccionada = null; // al dibujar, se deselecciona
+                    figuraSeleccionada = null;
                 }
 
                 repaint();
@@ -117,7 +108,6 @@ public class PanelDeDibujo extends JPanel {
         addMouseMotionListener(mouse);
     }
 
-    // ===== API pública usada por la ventana =====
     public void setHerramienta(Herramienta herramienta) {
         this.herramientaActual = herramienta;
     }
@@ -136,7 +126,7 @@ public class PanelDeDibujo extends JPanel {
 
     public void limpiar() {
         figuras.clear();
-        figuraSeleccionada = null; // ya no eliminamos figuraCopiada
+        figuraSeleccionada = null;
         repaint();
     }
 
@@ -174,18 +164,15 @@ public class PanelDeDibujo extends JPanel {
             repaint();
         }
     }
-    // ============================================
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Dibujo de todas las figuras
         for (Figura f : figuras) {
             f.dibujar(g);
         }
 
-        // Marco rojo de selección
         if (figuraSeleccionada != null) {
             Rectangle r = figuraSeleccionada.getBounds();
             Graphics2D g2 = (Graphics2D) g;
@@ -194,7 +181,6 @@ public class PanelDeDibujo extends JPanel {
             g2.drawRect(r.x - 3, r.y - 3, r.width + 6, r.height + 6);
         }
 
-        // Indicador del borrador
         if (herramientaActual == Herramienta.BORRADOR && cursorActual != null) {
             Graphics2D g2 = (Graphics2D) g;
             g2.setColor(Color.GRAY);
@@ -203,7 +189,6 @@ public class PanelDeDibujo extends JPanel {
         }
     }
 
-    // Devuelve la última figura (superior) cuyo bounds contiene el punto
     private Figura obtenerFiguraEnPunto(Point p) {
         for (int i = figuras.size() - 1; i >= 0; i--) {
             Figura f = figuras.get(i);
