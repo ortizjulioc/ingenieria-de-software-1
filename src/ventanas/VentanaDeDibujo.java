@@ -22,7 +22,7 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
         toolbar.setBackground(new Color(245, 247, 250));
 
-        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono", "Estrella", "Óvalo", "Rombo", "Flecha Arriba", "Flecha Abajo", "Flecha Derecha", "Flecha Izquierda"};
+        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono", "Estrella", "Óvalo", "Rombo", "Flecha Arriba", "Flecha Abajo", "Flecha Derecha", "Flecha Izquierda", "Trapecio", "Arco"};
         JComboBox<String> comboFiguras = new JComboBox<>(figuras);
         comboFiguras.setToolTipText("Seleccionar figura geométrica");
         comboFiguras.addActionListener(e -> {
@@ -41,6 +41,8 @@ public class VentanaDeDibujo extends JFrame {
                 case "Flecha Abajo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_ABAJO);
                 case "Flecha Derecha" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_DERECHA);
                 case "Flecha Izquierda" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_IZQUIERDA);
+                case "Trapecio" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRAPECIO);
+                case "Arco" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ARCO);
             }
         });
         toolbar.add(makeSection("Figuras"));
