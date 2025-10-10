@@ -13,7 +13,8 @@ public class PanelDeDibujo extends JPanel {
 
     public enum Herramienta {
         LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO, 
-        ESTRELLA, BORRADOR, OVALO, ROMBO, FLECHA_ARRIBA, FLECHA_ABAJO, FLECHA_DERECHA, FLECHA_IZQUIERDA
+        ESTRELLA, BORRADOR, OVALO, ROMBO, FLECHA_ARRIBA, FLECHA_ABAJO, 
+        FLECHA_DERECHA, FLECHA_IZQUIERDA, TRAPECIO, ARCO
     }
 
     private final List<Figura> figuras = new ArrayList<>();
@@ -62,6 +63,8 @@ public class PanelDeDibujo extends JPanel {
                     case FLECHA_ABAJO -> figuraActual = new FlechaAbajo(p);
                     case FLECHA_DERECHA -> figuraActual = new FlechaDerecha(p);
                     case FLECHA_IZQUIERDA -> figuraActual = new FlechaIzquierda(p);
+                    case TRAPECIO -> figuraActual = new Trapecio(p);
+                    case ARCO -> figuraActual = new Arco(p);
                 }
 
                 if (figuraActual != null) {
