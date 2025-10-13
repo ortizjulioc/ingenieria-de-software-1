@@ -1,27 +1,20 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package ventanas;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
-/**
- *
- * @author josearielpereyra
- */
 public class Ventana extends JFrame{
     public Ventana() {
         //COMPONENTES DE LA GUI (GRAPHICAL USER INTERFACE)
         //java.awt(Frame,Label,TextField,TextArea,ComboBox,Button,Panel)
         //javax.swing(JFrame,JLabel,JTextField,JTextArea,JComboBox,JButton, JPanel)
-        this.setTitle("Mi Primera Ventana");
+        this.setTitle("mi sas");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(400, 300);
         setLocationRelativeTo(null);
@@ -47,7 +40,7 @@ public class Ventana extends JFrame{
         //2- Implementar la interfaz apropiada para el evento que se quiere manejar
         //3- Decirle al componente de la GUI a que objeto de la clase de los pasos 1 y 2 avisarle cuando el evento suceda
         
-        class Manejador implements MouseListener, MouseMotionListener {
+        class Manejador implements MouseListener {
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -73,16 +66,6 @@ public class Ventana extends JFrame{
             public void mouseExited(MouseEvent e) {
                 System.out.println("El mouse salio de " + ((JButton)e.getSource()).getText());
             }  
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                System.out.println("Se arrastro el mouse");
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                System.out.println("Se movio el mouse");
-            }
         }
         Manejador manejador = new Manejador();
         
@@ -91,12 +74,6 @@ public class Ventana extends JFrame{
         boton3.addMouseListener(manejador);
         boton4.addMouseListener(manejador);
         boton5.addMouseListener(manejador);
-        
-        boton1.addMouseMotionListener(manejador);
-        boton2.addMouseMotionListener(manejador);
-        boton3.addMouseMotionListener(manejador);
-        boton4.addMouseMotionListener(manejador);
-        boton5.addMouseMotionListener(manejador);
     }
     
     public static void main(String[] args) {
