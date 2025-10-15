@@ -1,62 +1,39 @@
+#  🖌️ Aplicación de Dibujo (Proyecto grupal)
 
-# 🖌️ Aplicación de Dibujo
+Este proyecto es una aplicación de dibujo 2D en Java 17 + Swing para crear y manipular figuras en un lienzo.
+Sirve para practicar programación gráfica, POO, eventos de ratón/teclado, y un flujo básico de historial (deshacer/rehacer).
 
-Este proyecto es una aplicación de dibujo en Java que permite crear y manipular figuras en un lienzo.  
-El objetivo es aprender y practicar tanto **programación gráfica** como el **flujo de trabajo con Git**.
+# ✨ ¿Qué puedes hacer?
 
----
+- Pinceles: Dibujo libre (fino, medio, grueso) y Borrador con guía circular.
 
-## 🚀 Comandos básicos de Git
+- Figuras: Rectángulo, Línea, Triángulo, Círculo, Pentágono, Hexágono, Estrella, Óvalo, Rombo, Trapecio, Arco, Nube y Flechas (↑ ↓ → ←).
 
-A continuación, encontrarás los comandos más usados para trabajar con este repositorio:
+- Colores: de línea y relleno, configurables por separado.
 
-### 🔹 Configuración inicial
-```bash
-git config --global user.name "Tu Nombre"
-git config --global user.email "tuemail@example.com"
-```
-🔹 Guardar cambios (commit)
-```bash
-git add .
-git commit -m "Descripción de los cambios"
-```
-🔹 Subir cambios a GitHub (push)
-```bash
-Copiar código
-git push origin nombre-de-la-rama
-```
-🔹 Cambiar de rama
-```bash
-git checkout nombre-de-la-rama
-```
-🔹 Crear una nueva rama
-```bash
-git checkout -b nueva-rama
-```
-🔹 Fusionar ramas (merge)
-```bash
-git checkout main
-git merge nombre-de-la-rama
-```
-📌 Flujo de trabajo recomendado
-Crear una nueva rama para cada funcionalidad o corrección:
+- Selección de figuras: Shift + Clic (aparece un marco rojo).
 
-```bash
-git checkout -b feature/nombre-funcionalidad
-Realizar cambios y hacer commits descriptivos.
-```
-Subir la rama a GitHub:
-```bash
-git push origin feature/nombre-funcionalidad
-Crear un Pull Request en GitHub para fusionar los cambios a main.
-```
-💡 Ejemplo práctico
-Si quieres agregar una nueva herramienta de dibujo:
+- Copiar/Pegar: duplica una figura preservando sus estilos.
 
-```bash
-git checkout -b feature/herramienta-borrador
-# (haces cambios en el código)
-git add .
-git commit -m "Agregada herramienta de borrador"
-git push origin feature/herramienta-borrador
-```
+- Guardar imagen: exporta el lienzo a PNG o JPG.
+
+- Deshacer/Rehacer: Ctrl+Z / Ctrl+Y (historial basado en snapshots).
+
+ # 🖱️ Uso rápido (paso a paso)
+
+1. En la barra de herramientas, elige Figuras o Pinceles.
+
+2. Define Color Línea y Color Relleno.
+
+3. Arrastra con el mouse sobre el lienzo para dibujar.
+
+4. Selecciona una figura con Shift + Clic → Copiar → Pegar (la copia se desplaza 20 px).
+
+5. Guardar para exportar todo el lienzo como PNG/JPG.
+
+### Atajos:
+
+- Ctrl+Z Deshacer
+- Ctrl+Y Rehacer
+
+
