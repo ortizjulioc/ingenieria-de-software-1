@@ -16,7 +16,7 @@ public class PanelDeDibujo extends JPanel {
     public enum Herramienta {
         LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO,
         ESTRELLA, BORRADOR, OVALO, ROMBO, FLECHA_ARRIBA, FLECHA_ABAJO,
-        FLECHA_DERECHA, FLECHA_IZQUIERDA, TRAPECIO, ARCO, NUBE,
+        FLECHA_DERECHA, FLECHA_IZQUIERDA, TRAPECIO, ARCO, NUBE, CORAZON
     }
 
     private final List<Figura> figuras = new ArrayList<>();
@@ -107,6 +107,8 @@ public class PanelDeDibujo extends JPanel {
                         figuraActual = new Arco(p);
                     case NUBE ->
                         figuraActual = new Nube(p);
+                    case CORAZON ->
+                        figuraActual = new Corazon(p);
                 }
 
                 if (figuraActual != null) {

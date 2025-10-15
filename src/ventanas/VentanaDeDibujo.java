@@ -25,7 +25,7 @@ public class VentanaDeDibujo extends JFrame {
 
         String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono",
             "Estrella", "Óvalo", "Rombo", "Flecha Arriba", "Flecha Abajo", "Flecha Derecha",
-            "Flecha Izquierda", "Trapecio", "Arco", "Nube"};
+            "Flecha Izquierda", "Trapecio", "Arco", "Nube", "Corazón"};
         JComboBox<String> comboFiguras = new JComboBox<>(figuras);
         comboFiguras.setToolTipText("Seleccionar figura geométrica");
         comboFiguras.addActionListener(e -> {
@@ -63,6 +63,8 @@ public class VentanaDeDibujo extends JFrame {
                     panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ARCO);
                 case "Nube" ->
                     panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.NUBE);
+                case "Corazón" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.CORAZON);
             }
         });
         toolbar.add(makeSection("Figuras"));
