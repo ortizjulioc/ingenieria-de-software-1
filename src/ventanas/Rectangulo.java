@@ -23,10 +23,13 @@ public class Rectangulo extends Figura {
 
         g.setColor(colorLinea);
         g.drawRect(x, y, w, h);
+        
+        //llama al contorno desde Figura
+        dibujarContornoSeleccion(g);
     }
 
     @Override
-    public void actualizar(Point puntoActual) { this.fin = puntoActual; }
+    public void actualizar(Point puntoActual) { this.fin = puntoActual; actualizarBounds();}
 
     @Override
     public Figura clonarConDesplazamiento(int dx, int dy) {

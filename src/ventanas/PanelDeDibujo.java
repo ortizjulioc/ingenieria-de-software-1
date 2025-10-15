@@ -25,6 +25,11 @@ public class PanelDeDibujo extends JPanel {
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = Color.WHITE;
     private int grosor = 2;
+    private boolean moviendo = false;
+    private Point puntoAnterior = null;
+    private boolean redimensionando = false;
+    private final int MARGEN_REDIMENSION = 8;
+
 
     private Figura figuraSeleccionada = null;
     private Figura figuraCopiada = null;
@@ -58,12 +63,48 @@ public class PanelDeDibujo extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 Point p = e.getPoint();
+           
+                 figuraSeleccionada = obtenerFiguraEnPunto(p);
 
                 if (e.isShiftDown()) {
+
+                 if (figuraSeleccionada != null) {
+                      
+                  // Si haces click sobre una figura existente
+                    Rectangle r = figuraSeleccionada.getBounds();
+
+                    boolean enBorde = p.x >= r.x - MARGEN_REDIMENSION && p.x <= r.x + r.width + MARGEN_REDIMENSION &&
+                          p.y >= r.y - MARGEN_REDIMENSION && p.y <= r.y + r.height + MARGEN_REDIMENSION &&
+                          !(r.contains(p.x, p.y));
+
+                     if (enBorde) {
+                      redimensionando = true;
+                    } else {
+                     moviendo = true;
+                     }
+
+                       puntoAnterior = p;
+                     for (Figura f : figuras) {
+                      f.setSeleccionada(f == figuraSeleccionada);
+                      }
+
+                // Si se hace clic sobre una figura existente, la preparamos para mover
+                 for (Figura f : figuras) {
+                  f.setSeleccionada(f == figuraSeleccionada);
+                     }
+                      moviendo = true;
+                      puntoAnterior = p;
+
+                      // SHIFT + clic = SELECCIONAR (sin crear figura)
+               if (e.isShiftDown()) {
                     figuraActual = null;
                     figuraSeleccionada = obtenerFiguraEnPunto(p);
+                    for (Figura f : figuras) {
+                    f.setSeleccionada(f == figuraSeleccionada);
+                     }
                     repaint();
                     return;
+                    }
                 }
 
                 snapshot();
@@ -122,12 +163,52 @@ public class PanelDeDibujo extends JPanel {
 
                 repaint();
             }
+            }
 
             @Override
             public void mouseDragged(MouseEvent e) {
+                Point p = e.getPoint();
+
+                if (moviendo && figuraSeleccionada != null) {
+                    int dx = e.getX() - puntoAnterior.x;
+                    int dy = e.getY() - puntoAnterior.y;
+
+                    figuraSeleccionada.mover(dx, dy);
+                    figuraSeleccionada.actualizarBounds();
+
+                    puntoAnterior = e.getPoint();
+                    repaint();
+                    }
+                
+                if (moviendo && figuraSeleccionada != null) {
+                 int dx = p.x - puntoAnterior.x;
+                 int dy = p.y - puntoAnterior.y;
+                 figuraSeleccionada = figuraSeleccionada.clonarConDesplazamiento(dx, dy);
+                 figuras.set(figuras.indexOf(figuraSeleccionada), figuraSeleccionada);
+                 puntoAnterior = p;
+                 repaint();
+                 return;
+                 } 
+                if (moviendo && figuraSeleccionada != null) {
+                 int dx = p.x - puntoAnterior.x;
+                 int dy = p.y - puntoAnterior.y;
+                 figuraSeleccionada.mover(dx, dy);
+                 puntoAnterior = p;
+                 repaint();
+                 return;
+                }
+
+              if (redimensionando && figuraSeleccionada != null) {
+                int dx = p.x - puntoAnterior.x;
+                int dy = p.y - puntoAnterior.y;
+                figuraSeleccionada.redimensionar(dx, dy);
+                puntoAnterior = p;
+                repaint();
+                return;
+                }
                 cursorActual = e.getPoint();
                 if (figuraActual != null) {
-                    figuraActual.actualizar(e.getPoint());
+                    figuraActual.actualizar(p);
                     repaint();
                 }
             }
@@ -140,8 +221,19 @@ public class PanelDeDibujo extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                moviendo = false;
+                redimensionando = false;
+                puntoAnterior = null;
+                
+                if (figuraActual != null) {
+                figuraSeleccionada = figuraActual;
+                figuraActual.setSeleccionada(true);
                 figuraActual = null;
+                for (Figura f : figuras) {
+                f.setSeleccionada(f == figuraSeleccionada);
+                }
                 repaint();
+            }
             }
 
             @Override

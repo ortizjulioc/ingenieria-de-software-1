@@ -18,6 +18,9 @@ public class Triangulo extends Figura {
         g.fillPolygon(poly);
         g.setColor(colorLinea);
         g.drawPolygon(poly);
+        
+        //llama al contorno desde Figura
+        dibujarContornoSeleccion(g);
     }
 
     private Polygon getPolygon() {
@@ -37,7 +40,7 @@ public class Triangulo extends Figura {
     }
 
     @Override
-    public void actualizar(Point puntoActual) { this.fin = puntoActual; }
+    public void actualizar(Point puntoActual) { this.fin = puntoActual; actualizarBounds();}
 
     @Override
     public Figura clonarConDesplazamiento(int dx, int dy) {

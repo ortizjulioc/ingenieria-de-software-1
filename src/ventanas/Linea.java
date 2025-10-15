@@ -15,10 +15,13 @@ public class Linea extends Figura {
     public void dibujar(Graphics g) {
         g.setColor(colorLinea);
         g.drawLine(puntoInicial.x, puntoInicial.y, puntoFinal.x, puntoFinal.y);
+        
+        //llama al contorno desde Figura
+        dibujarContornoSeleccion(g);
     }
 
     @Override
-    public void actualizar(Point puntoFinal) { this.puntoFinal = puntoFinal; }
+    public void actualizar(Point puntoFinal) { this.puntoFinal = puntoFinal; actualizarBounds();}
 
     @Override
     public Figura clonarConDesplazamiento(int dx, int dy) {

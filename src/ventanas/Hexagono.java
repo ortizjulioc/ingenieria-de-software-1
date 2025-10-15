@@ -33,10 +33,13 @@ public class Hexagono extends Figura {
         g.fillPolygon(p);
         g.setColor(colorLinea);
         g.drawPolygon(p);
+        
+        //llama al contorno desde Figura
+        dibujarContornoSeleccion(g);
     }
 
     @Override
-    public void actualizar(Point puntoActual) { this.fin = puntoActual; }
+    public void actualizar(Point puntoActual) { this.fin = puntoActual; actualizarBounds(); }
 
     @Override
     public Figura clonarConDesplazamiento(int dx, int dy) {
