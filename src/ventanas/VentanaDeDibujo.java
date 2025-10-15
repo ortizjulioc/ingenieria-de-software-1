@@ -7,6 +7,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 public class VentanaDeDibujo extends JFrame {
+
     private PanelDeDibujo panelDeDibujo;
 
     public VentanaDeDibujo(String title) throws HeadlessException {
@@ -22,29 +23,46 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
         toolbar.setBackground(new Color(245, 247, 250));
 
-        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono", "Estrella", "Óvalo", "Rombo", "Flecha Arriba", "Flecha Abajo", "Flecha Derecha", "Flecha Izquierda", "Trapecio", "Arco","Nube"};
+        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono",
+            "Estrella", "Óvalo", "Rombo", "Flecha Arriba", "Flecha Abajo", "Flecha Derecha",
+            "Flecha Izquierda", "Trapecio", "Arco", "Nube"};
         JComboBox<String> comboFiguras = new JComboBox<>(figuras);
         comboFiguras.setToolTipText("Seleccionar figura geométrica");
         comboFiguras.addActionListener(e -> {
             String sel = (String) comboFiguras.getSelectedItem();
             switch (sel) {
-                case "Rectángulo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.RECTANGULO);
-                case "Línea" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LINEA);
-                case "Triángulo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRIANGULO);
-                case "Círculo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.CIRCULO);
-                case "Pentágono" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.PENTAGONO);
-                case "Hexágono" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.HEXAGONO);
-                case "Estrella" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ESTRELLA);
-                case "Óvalo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.OVALO);
-                case "Rombo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ROMBO);
-                case "Flecha Arriba" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_ARRIBA);
-                case "Flecha Abajo" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_ABAJO);
-                case "Flecha Derecha" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_DERECHA);
-                case "Flecha Izquierda" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_IZQUIERDA);
-                case "Trapecio" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRAPECIO);
-                case "Arco" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ARCO);
-                case "Nube" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.NUBE);
-
+                case "Rectángulo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.RECTANGULO);
+                case "Línea" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LINEA);
+                case "Triángulo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRIANGULO);
+                case "Círculo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.CIRCULO);
+                case "Pentágono" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.PENTAGONO);
+                case "Hexágono" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.HEXAGONO);
+                case "Estrella" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ESTRELLA);
+                case "Óvalo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.OVALO);
+                case "Rombo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ROMBO);
+                case "Flecha Arriba" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_ARRIBA);
+                case "Flecha Abajo" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_ABAJO);
+                case "Flecha Derecha" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_DERECHA);
+                case "Flecha Izquierda" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_IZQUIERDA);
+                case "Trapecio" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRAPECIO);
+                case "Arco" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ARCO);
+                case "Nube" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.NUBE);
             }
         });
         toolbar.add(makeSection("Figuras"));
@@ -73,7 +91,8 @@ public class VentanaDeDibujo extends JFrame {
                     panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
                     panelDeDibujo.setGrosor(12);
                 }
-                case "Borrador" -> panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.BORRADOR);
+                case "Borrador" ->
+                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.BORRADOR);
             }
         });
         toolbar.add(makeSection("Pinceles"));
@@ -84,11 +103,15 @@ public class VentanaDeDibujo extends JFrame {
         JButton btnColorRelleno = new JButton("Color Relleno");
         btnColorLinea.addActionListener(e -> {
             Color nuevo = JColorChooser.showDialog(this, "Elige color de línea", Color.BLACK);
-            if (nuevo != null) panelDeDibujo.setColorLinea(nuevo);
+            if (nuevo != null) {
+                panelDeDibujo.setColorLinea(nuevo);
+            }
         });
         btnColorRelleno.addActionListener(e -> {
             Color nuevo = JColorChooser.showDialog(this, "Elige color de relleno", Color.WHITE);
-            if (nuevo != null) panelDeDibujo.setColorRelleno(nuevo);
+            if (nuevo != null) {
+                panelDeDibujo.setColorRelleno(nuevo);
+            }
         });
         toolbar.add(makeSection("Colores"));
         toolbar.add(btnColorLinea);
@@ -97,16 +120,22 @@ public class VentanaDeDibujo extends JFrame {
 
         JButton btnCopiar = new JButton("Copiar");
         JButton btnPegar = new JButton("Pegar");
+        JButton btnDeshacer = new JButton("Deshacer");
+        JButton btnRehacer = new JButton("Rehacer");
         JButton btnLimpiar = new JButton("Limpiar");
         JButton btnGuardar = new JButton("Guardar");
 
         btnCopiar.setToolTipText("Shift + clic sobre figura → Copiar");
         btnPegar.setToolTipText("Pegar figura copiada");
+        btnDeshacer.setToolTipText("Ctrl + Z");
+        btnRehacer.setToolTipText("Ctrl + Y");
         btnLimpiar.setToolTipText("Borrar todo el lienzo");
         btnGuardar.setToolTipText("Guardar dibujo como imagen");
 
         btnCopiar.addActionListener(e -> panelDeDibujo.copiarFiguraSeleccionada());
         btnPegar.addActionListener(e -> panelDeDibujo.pegarFigura());
+        btnDeshacer.addActionListener(e -> panelDeDibujo.deshacer());
+        btnRehacer.addActionListener(e -> panelDeDibujo.rehacer());
         btnLimpiar.addActionListener(e -> panelDeDibujo.limpiar());
         btnGuardar.addActionListener(e -> {
             JFileChooser fc = new JFileChooser();
@@ -117,8 +146,11 @@ public class VentanaDeDibujo extends JFrame {
                 File archivo = fc.getSelectedFile();
                 String formato = "png";
                 String nombre = archivo.getName().toLowerCase();
-                if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg")) formato = "jpg";
-                else if (!nombre.endsWith(".png")) archivo = new File(archivo.getAbsolutePath() + ".png");
+                if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg")) {
+                    formato = "jpg";
+                } else if (!nombre.endsWith(".png")) {
+                    archivo = new File(archivo.getAbsolutePath() + ".png");
+                }
                 panelDeDibujo.guardarComoImagen(archivo.getAbsolutePath(), formato);
             }
         });
@@ -126,12 +158,33 @@ public class VentanaDeDibujo extends JFrame {
         toolbar.add(makeSection("Acciones"));
         toolbar.add(btnCopiar);
         toolbar.add(btnPegar);
+        toolbar.add(btnDeshacer);
+        toolbar.add(btnRehacer);
         toolbar.add(btnLimpiar);
         toolbar.add(btnGuardar);
 
         setLayout(new BorderLayout());
         add(toolbar, BorderLayout.NORTH);
         add(panelDeDibujo, BorderLayout.CENTER);
+
+        // Atajos globales (Ctrl+Z / Ctrl+Y) por si el foco no está en el panel
+        JRootPane root = getRootPane();
+        InputMap im = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = root.getActionMap();
+        im.put(KeyStroke.getKeyStroke("control Z"), "undo");
+        im.put(KeyStroke.getKeyStroke("control Y"), "redo");
+        am.put("undo", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                panelDeDibujo.deshacer();
+            }
+        });
+        am.put("redo", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                panelDeDibujo.rehacer();
+            }
+        });
     }
 
     private JLabel makeSection(String text) {
@@ -148,7 +201,8 @@ public class VentanaDeDibujo extends JFrame {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         SwingUtilities.invokeLater(() -> new VentanaDeDibujo("Mi Ventana De Dibujo").setVisible(true));
     }
 }

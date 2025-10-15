@@ -5,15 +5,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import javax.imageio.ImageIO;
 
 public class PanelDeDibujo extends JPanel {
 
     public enum Herramienta {
-        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO, 
-        ESTRELLA, BORRADOR, OVALO, ROMBO, FLECHA_ARRIBA, FLECHA_ABAJO, 
+        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO,
+        ESTRELLA, BORRADOR, OVALO, ROMBO, FLECHA_ARRIBA, FLECHA_ABAJO,
         FLECHA_DERECHA, FLECHA_IZQUIERDA, TRAPECIO, ARCO, NUBE,
     }
 
@@ -29,8 +31,28 @@ public class PanelDeDibujo extends JPanel {
 
     private Point cursorActual = null;
 
+    private final Deque<List<Figura>> undoStack = new ArrayDeque<>();
+    private final Deque<List<Figura>> redoStack = new ArrayDeque<>();
+
     public PanelDeDibujo() {
         setBackground(Color.WHITE);
+
+        InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = getActionMap();
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()), "undo");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()), "redo");
+        am.put("undo", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deshacer();
+            }
+        });
+        am.put("redo", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rehacer();
+            }
+        });
 
         MouseAdapter mouse = new MouseAdapter() {
             @Override
@@ -44,29 +66,47 @@ public class PanelDeDibujo extends JPanel {
                     return;
                 }
 
+                snapshot();
+
                 switch (herramientaActual) {
-                    case LIBRE -> figuraActual = new DibujoLibre(p, grosor);
+                    case LIBRE ->
+                        figuraActual = new DibujoLibre(p, grosor);
                     case BORRADOR -> {
                         figuraActual = new DibujoLibre(p, 20);
                         figuraActual.setColorLinea(colorRelleno);
                     }
-                    case RECTANGULO -> figuraActual = new Rectangulo(p);
-                    case LINEA -> figuraActual = new Linea(p);
-                    case TRIANGULO -> figuraActual = new Triangulo(p);
-                    case CIRCULO -> figuraActual = new Circulo(p);
-                    case PENTAGONO -> figuraActual = new Pentagono(p);
-                    case HEXAGONO -> figuraActual = new Hexagono(p);
-                    case ESTRELLA -> figuraActual = new Estrella(p);
-                    case OVALO -> figuraActual = new Ovalo(p);
-                    case ROMBO -> figuraActual = new Rombo(p);
-                    case FLECHA_ARRIBA -> figuraActual = new FlechaArriba(p);
-                    case FLECHA_ABAJO -> figuraActual = new FlechaAbajo(p);
-                    case FLECHA_DERECHA -> figuraActual = new FlechaDerecha(p);
-                    case FLECHA_IZQUIERDA -> figuraActual = new FlechaIzquierda(p);
-                    case TRAPECIO -> figuraActual = new Trapecio(p);
-                    case ARCO -> figuraActual = new Arco(p);
-                    case NUBE -> figuraActual = new Nube(p);
-
+                    case RECTANGULO ->
+                        figuraActual = new Rectangulo(p);
+                    case LINEA ->
+                        figuraActual = new Linea(p);
+                    case TRIANGULO ->
+                        figuraActual = new Triangulo(p);
+                    case CIRCULO ->
+                        figuraActual = new Circulo(p);
+                    case PENTAGONO ->
+                        figuraActual = new Pentagono(p);
+                    case HEXAGONO ->
+                        figuraActual = new Hexagono(p);
+                    case ESTRELLA ->
+                        figuraActual = new Estrella(p);
+                    case OVALO ->
+                        figuraActual = new Ovalo(p);
+                    case ROMBO ->
+                        figuraActual = new Rombo(p);
+                    case FLECHA_ARRIBA ->
+                        figuraActual = new FlechaArriba(p);
+                    case FLECHA_ABAJO ->
+                        figuraActual = new FlechaAbajo(p);
+                    case FLECHA_DERECHA ->
+                        figuraActual = new FlechaDerecha(p);
+                    case FLECHA_IZQUIERDA ->
+                        figuraActual = new FlechaIzquierda(p);
+                    case TRAPECIO ->
+                        figuraActual = new Trapecio(p);
+                    case ARCO ->
+                        figuraActual = new Arco(p);
+                    case NUBE ->
+                        figuraActual = new Nube(p);
                 }
 
                 if (figuraActual != null) {
@@ -113,6 +153,46 @@ public class PanelDeDibujo extends JPanel {
         addMouseMotionListener(mouse);
     }
 
+    private void snapshot() {
+        undoStack.push(deepCopy(figuras));
+        // Nueva acción invalida el futuro
+        redoStack.clear();
+    }
+
+    private List<Figura> deepCopy(List<Figura> src) {
+        List<Figura> copia = new ArrayList<>(src.size());
+        for (Figura f : src) {
+            copia.add(f.clonarConDesplazamiento(0, 0));
+        }
+        return copia;
+    }
+
+    public void deshacer() {
+        if (undoStack.isEmpty()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        redoStack.push(deepCopy(figuras));
+        List<Figura> anterior = undoStack.pop();
+        figuras.clear();
+        figuras.addAll(anterior);
+        figuraSeleccionada = null;
+        repaint();
+    }
+
+    public void rehacer() {
+        if (redoStack.isEmpty()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        undoStack.push(deepCopy(figuras));
+        List<Figura> futuro = redoStack.pop();
+        figuras.clear();
+        figuras.addAll(futuro);
+        figuraSeleccionada = null;
+        repaint();
+    }
+
     public void setHerramienta(Herramienta herramienta) {
         this.herramientaActual = herramienta;
     }
@@ -130,6 +210,7 @@ public class PanelDeDibujo extends JPanel {
     }
 
     public void limpiar() {
+        snapshot();
         figuras.clear();
         figuraSeleccionada = null;
         repaint();
@@ -162,6 +243,8 @@ public class PanelDeDibujo extends JPanel {
             JOptionPane.showMessageDialog(this, "No hay figura copiada.");
             return;
         }
+
+        snapshot();
         Figura nueva = figuraCopiada.clonarConDesplazamiento(20, 20);
         if (nueva != null) {
             figuras.add(nueva);
