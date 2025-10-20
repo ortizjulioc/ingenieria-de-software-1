@@ -9,8 +9,8 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 /**
- * Panel principal con TODAS las herramientas, Dibujo Libre, Undo/Redo y Copiar/Pegar.
- * Agregado: herramienta CORAZON.
+ * Panel principal con herramientas completas, Dibujo Libre, Borrador con silueta,
+ * Undo/Redo, Copiar/Pegar, y botón Limpiar (expuesto desde la Ventana).
  */
 public class PanelDeDibujo extends JPanel {
 
@@ -34,6 +34,7 @@ public class PanelDeDibujo extends JPanel {
         FLECHA_IZQUIERDA,
         FLECHA_DERECHA,
         DIBUJO_LIBRE,
+        BORRADOR,
         CUBETA
     }
 
@@ -47,6 +48,10 @@ public class PanelDeDibujo extends JPanel {
     // Grosor del pincel para Dibujo Libre
     private float grosorActual = 2.0f;
 
+    // Borrador: tamaño y color (por defecto blanco)
+    private float tamBorrador = 12.0f;
+    private Color colorBorrador = Color.WHITE;
+
     // Selección / arrastre / resize
     private Figura figuraSeleccionada = null;
     private boolean arrastrando = false;
@@ -54,6 +59,9 @@ public class PanelDeDibujo extends JPanel {
     private int handleActivo = -1; // 0..7
     private Point puntoAnterior = null;
     private double aspectRatioInicial = 1.0;
+
+    // Para mostrar silueta del borrador
+    private Point mousePos = null;
 
     // Undo/Redo por snapshots
     private final Deque<java.util.List<Figura>> undoStack = new ArrayDeque<>();
@@ -108,6 +116,18 @@ public class PanelDeDibujo extends JPanel {
                     DibujoLibre dl = new DibujoLibre(puntoAnterior, grosorActual);
                     dl.setColorLinea(colorLinea);
                     figuraActual = dl;
+                    figuras.add(figuraActual);
+                    figuraSeleccionada = figuraActual;
+                    pushUndo();
+                    modificado = true;
+                    repaint();
+                    return;
+                }
+
+                if (herramienta == Herramienta.BORRADOR) {
+                    Borrador b = new Borrador(puntoAnterior, tamBorrador);
+                    b.setColorLinea(colorBorrador); // "pinta" con color de borrador
+                    figuraActual = b;
                     figuras.add(figuraActual);
                     figuraSeleccionada = figuraActual;
                     pushUndo();
@@ -311,10 +331,28 @@ public class PanelDeDibujo extends JPanel {
                     return;
                 }
 
+                if (herramienta == Herramienta.BORRADOR && figuraActual instanceof Borrador b) {
+                    b.agregarPunto(p);
+                    repaint();
+                    return;
+                }
+
                 if (figuraActual != null) {
                     figuraActual.actualizar(p);
                     repaint();
                 }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                mousePos = e.getPoint();
+                if (herramienta == Herramienta.BORRADOR) repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                mousePos = null;
+                if (herramienta == Herramienta.BORRADOR) repaint();
             }
 
             @Override
@@ -363,7 +401,7 @@ public class PanelDeDibujo extends JPanel {
         getActionMap().put("paste", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) { pegar(); }
         });
-        // Ajuste rápido de grosor con + y -
+        // Ajuste rápido de grosor con + y - (pincel) cuando Dibujo Libre
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "incStroke");
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "incStroke");
         getActionMap().put("incStroke", new AbstractAction() {
@@ -451,6 +489,21 @@ public class PanelDeDibujo extends JPanel {
 
         for (Figura f : figuras) f.dibujar(g2);
 
+        // Silueta del borrador (overlay)
+        if (herramienta == Herramienta.BORRADOR && mousePos != null) {
+            Composite old = g2.getComposite();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
+            g2.setColor(colorBorrador);
+            int d = Math.round(tamBorrador);
+            g2.fillOval(mousePos.x - d/2, mousePos.y - d/2, d, d);
+            g2.setComposite(old);
+
+            // Contorno de la silueta
+            g2.setColor(new Color(0,0,0,120));
+            g2.setStroke(new BasicStroke(1f));
+            g2.drawOval(mousePos.x - d/2, mousePos.y - d/2, d, d);
+        }
+
         // Bounding box y handles SOLO si es rellenable
         if (figuraSeleccionada != null && (figuraSeleccionada instanceof FiguraRellenable)) {
             Rectangle b = figuraSeleccionada.getBounds();
@@ -472,6 +525,11 @@ public class PanelDeDibujo extends JPanel {
     public void setColorRelleno(Color c) { this.colorRelleno = c; }
     public void setGrosorActual(float g) { this.grosorActual = Math.max(1f, g); }
     public float getGrosorActual() { return grosorActual; }
+
+    public void setTamBorrador(float t) { this.tamBorrador = Math.max(1f, t); repaint(); }
+    public float getTamBorrador() { return tamBorrador; }
+    public void setColorBorrador(Color c) { this.colorBorrador = (c != null ? c : Color.WHITE); repaint(); }
+    public Color getColorBorrador() { return colorBorrador; }
 
     /** Si la selección es DibujoLibre, ajusta su grosor y repinta. */
     public void ajustarGrosorSeleccionado(float g) {
@@ -503,6 +561,14 @@ public class PanelDeDibujo extends JPanel {
         pushUndo();
         figuras.add(portapapeles.get(0).clonarConDesplazamiento(20, 20));
         figuraSeleccionada = figuras.get(figuras.size() - 1);
+        modificado = true;
+        repaint();
+    }
+
+    // ==== Limpiar ====
+    public void limpiarLienzo() {
+        figuras.clear();
+        figuraSeleccionada = null;
         modificado = true;
         repaint();
     }
@@ -570,10 +636,4 @@ public class PanelDeDibujo extends JPanel {
     }
 
     public boolean isModificado() { return modificado; }
-    public void limpiarLienzo() {
-        figuras.clear();
-        figuraSeleccionada = null;
-        modificado = true;
-        repaint();
-    }
 }

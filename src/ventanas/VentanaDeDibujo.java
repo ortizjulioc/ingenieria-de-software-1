@@ -5,18 +5,19 @@ import java.awt.*;
 import java.io.File;
 
 /**
- * Ventana principal: añade Dibujo Libre, grosor del pincel,
- * Editar (Deshacer/Rehacer/Copiar/Pegar) y botón de Corazón.
+ * Ventana principal: añade botón "Limpiar" y herramienta "Borrador" con controles
+ * de tamaño y color.
  */
 public class VentanaDeDibujo extends JFrame {
 
     private final PanelDeDibujo panel;
     private JSpinner spinnerGrosor;
+    private JSpinner spinnerBorrador;
 
     public VentanaDeDibujo() {
         super("Editor de Dibujo 2D");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1150, 720);
+        setSize(1200, 760);
         setLocationRelativeTo(null);
 
         panel = new PanelDeDibujo();
@@ -104,11 +105,18 @@ public class VentanaDeDibujo extends JFrame {
         itCopy.addActionListener(e -> panel.copiarSeleccion());
         JMenuItem itPaste = new JMenuItem("Pegar (Ctrl+V)");
         itPaste.addActionListener(e -> panel.pegar());
+        JMenuItem itLimpiar = new JMenuItem("Limpiar todo");
+        itLimpiar.addActionListener(e -> {
+            int r = JOptionPane.showConfirmDialog(this, "¿Borrar todo el lienzo?", "Limpiar", JOptionPane.YES_NO_OPTION);
+            if (r == JOptionPane.YES_OPTION) panel.limpiarLienzo();
+        });
         mEditar.add(itUndo);
         mEditar.add(itRedo);
         mEditar.addSeparator();
         mEditar.add(itCopy);
         mEditar.add(itPaste);
+        mEditar.addSeparator();
+        mEditar.add(itLimpiar);
         mb.add(mEditar);
 
         return mb;
@@ -129,10 +137,11 @@ public class VentanaDeDibujo extends JFrame {
                     return b;
                 };
 
-        // Fila 1: selección + dibujo libre + básicas
+        // Fila 1: selección + dibujo libre + borrador + básicas
         JToggleButton bSel = mk.apply("Selección", PanelDeDibujo.Herramienta.SELECCION);
         bSel.setSelected(true);
         mk.apply("Dibujo libre", PanelDeDibujo.Herramienta.DIBUJO_LIBRE);
+        mk.apply("Borrador", PanelDeDibujo.Herramienta.BORRADOR);
         mk.apply("Línea", PanelDeDibujo.Herramienta.LINEA);
         mk.apply("Rectángulo", PanelDeDibujo.Herramienta.RECTANGULO);
         mk.apply("Círculo", PanelDeDibujo.Herramienta.CIRCULO);
@@ -159,7 +168,7 @@ public class VentanaDeDibujo extends JFrame {
         mk.apply("Cubeta", PanelDeDibujo.Herramienta.CUBETA);
         tb.addSeparator();
 
-        // Colores y grosor
+        // Colores pincel y relleno
         JButton cLinea = new JButton("Color línea");
         cLinea.addActionListener(e -> {
             Color c = JColorChooser.showDialog(this, "Selecciona color de línea", Color.BLACK);
@@ -172,9 +181,18 @@ public class VentanaDeDibujo extends JFrame {
             if (c != null) panel.setColorRelleno(c);
         });
 
+        // Color del borrador
+        JButton cBorrador = new JButton("Color borrador");
+        cBorrador.addActionListener(e -> {
+            Color c = JColorChooser.showDialog(this, "Selecciona color de borrador", Color.WHITE);
+            if (c != null) panel.setColorBorrador(c);
+        });
+
+        // Spinners de grosor
         tb.add(cLinea);
         tb.add(cRelleno);
-        tb.add(new JLabel("  Grosor: "));
+        tb.add(cBorrador);
+        tb.add(new JLabel("  Grosor pincel: "));
         spinnerGrosor = new JSpinner(new SpinnerNumberModel(2, 1, 50, 1));
         spinnerGrosor.addChangeListener(e -> {
             float g = ((Integer) spinnerGrosor.getValue()).floatValue();
@@ -182,6 +200,23 @@ public class VentanaDeDibujo extends JFrame {
             panel.ajustarGrosorSeleccionado(g);
         });
         tb.add(spinnerGrosor);
+
+        tb.add(new JLabel("  Tamaño borrador: "));
+        spinnerBorrador = new JSpinner(new SpinnerNumberModel(12, 1, 100, 1));
+        spinnerBorrador.addChangeListener(e -> {
+            float t = ((Integer) spinnerBorrador.getValue()).floatValue();
+            panel.setTamBorrador(t);
+        });
+        tb.add(spinnerBorrador);
+
+        // Botón Limpiar
+        JButton btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.addActionListener(e -> {
+            int r = JOptionPane.showConfirmDialog(this, "¿Borrar todo el lienzo?", "Limpiar", JOptionPane.YES_NO_OPTION);
+            if (r == JOptionPane.YES_OPTION) panel.limpiarLienzo();
+        });
+        tb.addSeparator();
+        tb.add(btnLimpiar);
 
         return tb;
     }
