@@ -1,210 +1,160 @@
 package ventanas;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
+/**
+ * Ventana principal con toolbar que incluye botones para TODAS las herramientas.
+ */
 public class VentanaDeDibujo extends JFrame {
 
-    private PanelDeDibujo panelDeDibujo;
+    private final PanelDeDibujo panel;
 
-    public VentanaDeDibujo(String title) throws HeadlessException {
-        super(title);
+    public VentanaDeDibujo() {
+        super("Editor de Dibujo 2D");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1050, 700);
+        setSize(1100, 700);
         setLocationRelativeTo(null);
 
-        panelDeDibujo = new PanelDeDibujo();
+        panel = new PanelDeDibujo();
+        getContentPane().add(panel, BorderLayout.CENTER);
 
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        toolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        toolbar.setBackground(new Color(245, 247, 250));
-
-        String[] figuras = {"Rectángulo", "Línea", "Triángulo", "Círculo", "Pentágono", "Hexágono",
-            "Estrella", "Óvalo", "Rombo", "Flecha Arriba", "Flecha Abajo", "Flecha Derecha",
-            "Flecha Izquierda", "Trapecio", "Arco", "Nube", "Corazón"};
-        JComboBox<String> comboFiguras = new JComboBox<>(figuras);
-        comboFiguras.setToolTipText("Seleccionar figura geométrica");
-        comboFiguras.addActionListener(e -> {
-            String sel = (String) comboFiguras.getSelectedItem();
-            switch (sel) {
-                case "Rectángulo" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.RECTANGULO);
-                case "Línea" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LINEA);
-                case "Triángulo" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRIANGULO);
-                case "Círculo" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.CIRCULO);
-                case "Pentágono" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.PENTAGONO);
-                case "Hexágono" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.HEXAGONO);
-                case "Estrella" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ESTRELLA);
-                case "Óvalo" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.OVALO);
-                case "Rombo" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ROMBO);
-                case "Flecha Arriba" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_ARRIBA);
-                case "Flecha Abajo" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_ABAJO);
-                case "Flecha Derecha" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_DERECHA);
-                case "Flecha Izquierda" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.FLECHA_IZQUIERDA);
-                case "Trapecio" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.TRAPECIO);
-                case "Arco" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.ARCO);
-                case "Nube" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.NUBE);
-                case "Corazón" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.CORAZON);
-            }
-        });
-        toolbar.add(makeSection("Figuras"));
-        toolbar.add(comboFiguras);
-        toolbar.addSeparator();
-
-        String[] pinceles = {"Dibujo Libre", "Pincel Fino", "Pincel Medio", "Pincel Grueso", "Borrador"};
-        JComboBox<String> comboPinceles = new JComboBox<>(pinceles);
-        comboPinceles.setToolTipText("Seleccionar tipo de pincel");
-        comboPinceles.addActionListener(e -> {
-            String sel = (String) comboPinceles.getSelectedItem();
-            switch (sel) {
-                case "Dibujo Libre" -> {
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-                    panelDeDibujo.setGrosor(2);
-                }
-                case "Pincel Fino" -> {
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-                    panelDeDibujo.setGrosor(2);
-                }
-                case "Pincel Medio" -> {
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-                    panelDeDibujo.setGrosor(6);
-                }
-                case "Pincel Grueso" -> {
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.LIBRE);
-                    panelDeDibujo.setGrosor(12);
-                }
-                case "Borrador" ->
-                    panelDeDibujo.setHerramienta(PanelDeDibujo.Herramienta.BORRADOR);
-            }
-        });
-        toolbar.add(makeSection("Pinceles"));
-        toolbar.add(comboPinceles);
-        toolbar.addSeparator();
-
-        JButton btnColorLinea = new JButton("Color Línea");
-        JButton btnColorRelleno = new JButton("Color Relleno");
-        btnColorLinea.addActionListener(e -> {
-            Color nuevo = JColorChooser.showDialog(this, "Elige color de línea", Color.BLACK);
-            if (nuevo != null) {
-                panelDeDibujo.setColorLinea(nuevo);
-            }
-        });
-        btnColorRelleno.addActionListener(e -> {
-            Color nuevo = JColorChooser.showDialog(this, "Elige color de relleno", Color.WHITE);
-            if (nuevo != null) {
-                panelDeDibujo.setColorRelleno(nuevo);
-            }
-        });
-        toolbar.add(makeSection("Colores"));
-        toolbar.add(btnColorLinea);
-        toolbar.add(btnColorRelleno);
-        toolbar.addSeparator();
-
-        JButton btnCopiar = new JButton("Copiar");
-        JButton btnPegar = new JButton("Pegar");
-        JButton btnDeshacer = new JButton("Deshacer");
-        JButton btnRehacer = new JButton("Rehacer");
-        JButton btnLimpiar = new JButton("Limpiar");
-        JButton btnGuardar = new JButton("Guardar");
-
-        btnCopiar.setToolTipText("Shift + clic sobre figura → Copiar");
-        btnPegar.setToolTipText("Pegar figura copiada");
-        btnDeshacer.setToolTipText("Ctrl + Z");
-        btnRehacer.setToolTipText("Ctrl + Y");
-        btnLimpiar.setToolTipText("Borrar todo el lienzo");
-        btnGuardar.setToolTipText("Guardar dibujo como imagen");
-
-        btnCopiar.addActionListener(e -> panelDeDibujo.copiarFiguraSeleccionada());
-        btnPegar.addActionListener(e -> panelDeDibujo.pegarFigura());
-        btnDeshacer.addActionListener(e -> panelDeDibujo.deshacer());
-        btnRehacer.addActionListener(e -> panelDeDibujo.rehacer());
-        btnLimpiar.addActionListener(e -> panelDeDibujo.limpiar());
-        btnGuardar.addActionListener(e -> {
-            JFileChooser fc = new JFileChooser();
-            fc.setDialogTitle("Guardar dibujo como...");
-            fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("PNG Image", "png"));
-            fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JPG Image", "jpg"));
-            if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File archivo = fc.getSelectedFile();
-                String formato = "png";
-                String nombre = archivo.getName().toLowerCase();
-                if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg")) {
-                    formato = "jpg";
-                } else if (!nombre.endsWith(".png")) {
-                    archivo = new File(archivo.getAbsolutePath() + ".png");
-                }
-                panelDeDibujo.guardarComoImagen(archivo.getAbsolutePath(), formato);
-            }
-        });
-
-        toolbar.add(makeSection("Acciones"));
-        toolbar.add(btnCopiar);
-        toolbar.add(btnPegar);
-        toolbar.add(btnDeshacer);
-        toolbar.add(btnRehacer);
-        toolbar.add(btnLimpiar);
-        toolbar.add(btnGuardar);
-
-        setLayout(new BorderLayout());
-        add(toolbar, BorderLayout.NORTH);
-        add(panelDeDibujo, BorderLayout.CENTER);
-
-        // Atajos globales (Ctrl+Z / Ctrl+Y) por si el foco no está en el panel
-        JRootPane root = getRootPane();
-        InputMap im = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        ActionMap am = root.getActionMap();
-        im.put(KeyStroke.getKeyStroke("control Z"), "undo");
-        im.put(KeyStroke.getKeyStroke("control Y"), "redo");
-        am.put("undo", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                panelDeDibujo.deshacer();
-            }
-        });
-        am.put("redo", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                panelDeDibujo.rehacer();
-            }
-        });
+        setJMenuBar(crearMenu());
+        getContentPane().add(crearToolbar(), BorderLayout.NORTH);
     }
 
-    private JLabel makeSection(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 13f));
-        label.setOpaque(true);
-        label.setBackground(new Color(220, 230, 240));
-        label.setBorder(new LineBorder(new Color(180, 190, 200), 1, true));
-        label.setForeground(new Color(30, 50, 80));
-        label.setBorder(new EmptyBorder(3, 6, 3, 6));
-        return label;
+    private JMenuBar crearMenu() {
+        JMenuBar mb = new JMenuBar();
+        JMenu mArchivo = new JMenu("Archivo");
+
+        JMenuItem itNuevo = new JMenuItem("Nuevo");
+        itNuevo.addActionListener(e -> {
+            if (panel.isModificado()) {
+                int r = JOptionPane.showConfirmDialog(this,
+                        "¿Deseas guardar los cambios actuales?",
+                        "Nuevo dibujo", JOptionPane.YES_NO_CANCEL_OPTION);
+                if (r == JOptionPane.CANCEL_OPTION || r == JOptionPane.CLOSED_OPTION) return;
+                if (r == JOptionPane.YES_OPTION) {
+                    JFileChooser fc = new JFileChooser();
+                    fc.setDialogTitle("Guardar proyecto");
+                    if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                        try { panel.guardarProyecto(fc.getSelectedFile()); }
+                        catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage()); return; }
+                    } else return;
+                }
+            }
+            panel.limpiarLienzo();
+        });
+
+        JMenuItem itAbrir = new JMenuItem("Abrir...");
+        itAbrir.addActionListener(e -> {
+            if (panel.isModificado()) {
+                int r = JOptionPane.showConfirmDialog(this,
+                        "Tienes cambios sin guardar. ¿Continuar y descartarlos?",
+                        "Abrir proyecto", JOptionPane.YES_NO_OPTION);
+                if (r != JOptionPane.YES_OPTION) return;
+            }
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Abrir proyecto");
+            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try { panel.abrirProyecto(fc.getSelectedFile()); }
+                catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al abrir: " + ex.getMessage()); }
+            }
+        });
+
+        JMenuItem itGuardar = new JMenuItem("Guardar proyecto...");
+        itGuardar.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Guardar proyecto");
+            if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try { panel.guardarProyecto(fc.getSelectedFile()); }
+                catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage()); }
+            }
+        });
+
+        JMenuItem itExportar = new JMenuItem("Exportar PNG...");
+        itExportar.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Exportar como PNG");
+            if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try { panel.exportarComoPNG(fc.getSelectedFile()); }
+                catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al exportar: " + ex.getMessage()); }
+            }
+        });
+
+        mArchivo.add(itNuevo);
+        mArchivo.add(itAbrir);
+        mArchivo.addSeparator();
+        mArchivo.add(itGuardar);
+        mArchivo.add(itExportar);
+
+        mb.add(mArchivo);
+        return mb;
+    }
+
+    private JToolBar crearToolbar() {
+        JToolBar tb = new JToolBar();
+        tb.setFloatable(false);
+        ButtonGroup group = new ButtonGroup();
+
+        // Helper para crear toggle y agrupar
+        java.util.function.BiFunction<String, PanelDeDibujo.Herramienta, JToggleButton> mk =
+                (label, tool) -> {
+                    JToggleButton b = new JToggleButton(label);
+                    b.addActionListener(e -> panel.setHerramienta(tool));
+                    group.add(b);
+                    tb.add(b);
+                    return b;
+                };
+
+        // Fila 1: selección + básicas
+        JToggleButton bSel = mk.apply("Selección", PanelDeDibujo.Herramienta.SELECCION);
+        bSel.setSelected(true);
+        mk.apply("Línea", PanelDeDibujo.Herramienta.LINEA);
+        mk.apply("Rectángulo", PanelDeDibujo.Herramienta.RECTANGULO);
+        mk.apply("Círculo", PanelDeDibujo.Herramienta.CIRCULO);
+        mk.apply("Óvalo", PanelDeDibujo.Herramienta.OVALO);
+        mk.apply("Triángulo", PanelDeDibujo.Herramienta.TRIANGULO);
+        tb.addSeparator();
+
+        // Fila 2: poligonales y especiales
+        mk.apply("Rombo", PanelDeDibujo.Herramienta.ROMBO);
+        mk.apply("Trapecio", PanelDeDibujo.Herramienta.TRAPECIO);
+        mk.apply("Pentágono", PanelDeDibujo.Herramienta.PENTAGONO);
+        mk.apply("Hexágono", PanelDeDibujo.Herramienta.HEXAGONO);
+        mk.apply("Estrella", PanelDeDibujo.Herramienta.ESTRELLA);
+        mk.apply("Nube", PanelDeDibujo.Herramienta.NUBE);
+        mk.apply("Arco", PanelDeDibujo.Herramienta.ARCO);
+        tb.addSeparator();
+
+        // Fila 3: flechas
+        mk.apply("Flecha ↑", PanelDeDibujo.Herramienta.FLECHA_ARRIBA);
+        mk.apply("Flecha ↓", PanelDeDibujo.Herramienta.FLECHA_ABAJO);
+        mk.apply("Flecha ←", PanelDeDibujo.Herramienta.FLECHA_IZQUIERDA);
+        mk.apply("Flecha →", PanelDeDibujo.Herramienta.FLECHA_DERECHA);
+        tb.addSeparator();
+
+        // Cubeta y colores
+        mk.apply("Cubeta", PanelDeDibujo.Herramienta.CUBETA);
+        JButton cLinea = new JButton("Color línea");
+        cLinea.addActionListener(e -> {
+            Color c = JColorChooser.showDialog(this, "Selecciona color de línea", Color.BLACK);
+            if (c != null) panel.setColorLinea(c);
+        });
+        JButton cRelleno = new JButton("Color relleno");
+        cRelleno.addActionListener(e -> {
+            Color c = JColorChooser.showDialog(this, "Selecciona color de relleno", Color.WHITE);
+            if (c != null) panel.setColorRelleno(c);
+        });
+        tb.addSeparator();
+        tb.add(cLinea);
+        tb.add(cRelleno);
+
+        return tb;
     }
 
     public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception ignored) {
-        }
-        SwingUtilities.invokeLater(() -> new VentanaDeDibujo("Mi Ventana De Dibujo").setVisible(true));
+        SwingUtilities.invokeLater(() -> new VentanaDeDibujo().setVisible(true));
     }
 }

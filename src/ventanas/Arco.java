@@ -1,54 +1,45 @@
 package ventanas;
 
 import java.awt.*;
+import java.awt.geom.Arc2D;
 
-public class Arco extends Figura {
+public class Arco extends Figura implements FiguraRellenable {
+    private static final long serialVersionUID = 1L;
     private Point inicio;
-    private Point fin;
+    // Parámetros simples para el arco
+    private int startAngle = 30; // grados
+    private int extent = 300;    // grados (positivo antihorario)
 
     public Arco(Point inicio) {
         this.inicio = inicio;
-        this.fin = inicio;
+        setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-    @Override
-    public void dibujar(Graphics g) {
-        int x = Math.min(inicio.x, fin.x);
-        int y = Math.min(inicio.y, fin.y);
-        int w = Math.abs(fin.x - inicio.x);
-        int h = Math.abs(fin.y - inicio.y);
-        
-        Graphics2D g2d = (Graphics2D) g;
-        
-        // Dibujar solo el arco (sin relleno, solo línea)
-        if (colorLinea != null) {
-            g2d.setColor(colorLinea);
-            g2d.setStroke(new BasicStroke(2));
-            // Dibujar un arco de 180 grados (medio círculo)
-            g2d.drawArc(x, y, w, h, 0, 180);
-        }
+    public void setStartAngle(int deg) { this.startAngle = deg; }
+    public void setExtent(int deg) { this.extent = deg; }
+
+    @Override public void dibujar(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Shape s = new Arc2D.Double(bounds.x, bounds.y, bounds.width, bounds.height, startAngle, extent, Arc2D.PIE);
+        g2.setColor(colorRelleno); g2.fill(s);
+        g2.setColor(colorLinea);   g2.draw(s);
     }
 
-    @Override
-    public void actualizar(Point puntoActual) { 
-        this.fin = puntoActual; 
+    @Override public void actualizar(Point puntoActual) {
+        setBoundsNormalized(inicio.x, inicio.y, puntoActual.x, puntoActual.y);
     }
 
-    @Override
-    public Figura clonarConDesplazamiento(int dx, int dy) {
-        Arco copia = new Arco(new Point(inicio.x + dx, inicio.y + dy));
-        copia.fin = new Point(fin.x + dx, fin.y + dy);
-        copia.setColorLinea(colorLinea);
-        copia.setColorRelleno(colorRelleno);
-        return copia;
+    @Override public void desplazar(int dx, int dy) {
+        bounds = new Rectangle(bounds.x + dx, bounds.y + dy, bounds.width, bounds.height);
+        inicio = new Point(inicio.x + dx, inicio.y + dy);
     }
 
-    @Override
-    public Rectangle getBounds() {
-        int x = Math.min(inicio.x, fin.x);
-        int y = Math.min(inicio.y, fin.y);
-        int w = Math.abs(fin.x - inicio.x);
-        int h = Math.abs(fin.y - inicio.y);
-        return new Rectangle(x, y, w, h);
+    @Override public Figura clonarConDesplazamiento(int dx, int dy) {
+        Arco a = new Arco(new Point(inicio.x + dx, inicio.y + dy));
+        a.colorLinea = this.colorLinea; a.colorRelleno = this.colorRelleno;
+        a.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
+        a.startAngle = this.startAngle; a.extent = this.extent;
+        return a;
     }
 }

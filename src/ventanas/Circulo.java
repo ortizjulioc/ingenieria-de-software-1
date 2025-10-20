@@ -1,49 +1,49 @@
 package ventanas;
 
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 
-public class Circulo extends Figura {
+public class Circulo extends Figura implements FiguraRellenable {
+    private static final long serialVersionUID = 1L;
+
     private Point inicio;
-    private Point fin;
 
     public Circulo(Point inicio) {
         this.inicio = inicio;
-        this.fin = inicio;
+        setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
     @Override
     public void dibujar(Graphics g) {
-        int x = Math.min(inicio.x, fin.x);
-        int y = Math.min(inicio.y, fin.y);
-        int w = Math.abs(fin.x - inicio.x);
-        int h = Math.abs(fin.y - inicio.y);
-        int d = Math.min(w, h);
-
-        g.setColor(colorRelleno);
-        g.fillOval(x, y, d, d);
-        g.setColor(colorLinea);
-        g.drawOval(x, y, d, d);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        int d = Math.min(bounds.width, bounds.height); // círculo puro
+        int x = bounds.x + (bounds.width - d) / 2;
+        int y = bounds.y + (bounds.height - d) / 2;
+        Shape s = new Ellipse2D.Double(x, y, d, d);
+        g2.setColor(colorRelleno);
+        g2.fill(s);
+        g2.setColor(colorLinea);
+        g2.draw(s);
     }
 
     @Override
-    public void actualizar(Point puntoActual) { this.fin = puntoActual; }
+    public void actualizar(Point puntoActual) {
+        setBoundsNormalized(inicio.x, inicio.y, puntoActual.x, puntoActual.y);
+    }
+
+    @Override
+    public void desplazar(int dx, int dy) {
+        bounds = new Rectangle(bounds.x + dx, bounds.y + dy, bounds.width, bounds.height);
+        inicio = new Point(inicio.x + dx, inicio.y + dy);
+    }
 
     @Override
     public Figura clonarConDesplazamiento(int dx, int dy) {
-        Circulo copia = new Circulo(new Point(inicio.x + dx, inicio.y + dy));
-        copia.fin = new Point(fin.x + dx, fin.y + dy);
-        copia.setColorLinea(colorLinea);
-        copia.setColorRelleno(colorRelleno);
-        return copia;
-    }
-
-    @Override
-    public Rectangle getBounds() {
-        int x = Math.min(inicio.x, fin.x);
-        int y = Math.min(inicio.y, fin.y);
-        int w = Math.abs(fin.x - inicio.x);
-        int h = Math.abs(fin.y - inicio.y);
-        int d = Math.min(w, h);
-        return new Rectangle(x, y, d, d);
+        Circulo c = new Circulo(new Point(inicio.x + dx, inicio.y + dy));
+        c.colorLinea = this.colorLinea;
+        c.colorRelleno = this.colorRelleno;
+        c.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
+        return c;
     }
 }

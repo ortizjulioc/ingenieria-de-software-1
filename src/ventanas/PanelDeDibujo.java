@@ -4,288 +4,484 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 import javax.imageio.ImageIO;
 
+/**
+ * Panel principal con TODAS las herramientas de creación integradas.
+ * Incluye: selección, arrastre, redimensionado proporcional (rellenables),
+ * cubeta de pintura, exportar PNG (ARGB) y guardar/abrir proyecto.
+ */
 public class PanelDeDibujo extends JPanel {
 
     public enum Herramienta {
-        LIBRE, RECTANGULO, LINEA, TRIANGULO, CIRCULO, PENTAGONO, HEXAGONO,
-        ESTRELLA, BORRADOR, OVALO, ROMBO, FLECHA_ARRIBA, FLECHA_ABAJO,
-        FLECHA_DERECHA, FLECHA_IZQUIERDA, TRAPECIO, ARCO, NUBE, CORAZON
+        SELECCION,
+        LINEA,
+        RECTANGULO,
+        CIRCULO,
+        OVALO,
+        TRIANGULO,
+        ROMBO,
+        TRAPECIO,
+        PENTAGONO,
+        HEXAGONO,
+        ESTRELLA,
+        NUBE,
+        ARCO,
+        FLECHA_ARRIBA,
+        FLECHA_ABAJO,
+        FLECHA_IZQUIERDA,
+        FLECHA_DERECHA,
+        CUBETA
     }
 
-    private final List<Figura> figuras = new ArrayList<>();
-    private Figura figuraActual;
-    private Herramienta herramientaActual = Herramienta.LIBRE;
+    private final java.util.List<Figura> figuras = new ArrayList<>();
+    private Figura figuraActual = null;
+
+    private Herramienta herramienta = Herramienta.SELECCION;
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = Color.WHITE;
-    private int grosor = 2;
 
+    // Selección / arrastre / resize
     private Figura figuraSeleccionada = null;
-    private Figura figuraCopiada = null;
+    private boolean arrastrando = false;
+    private boolean redimensionando = false;
+    private int handleActivo = -1; // 0..7
+    private Point puntoAnterior = null;
+    private double aspectRatioInicial = 1.0;
 
-    private Point cursorActual = null;
-
-    private final Deque<List<Figura>> undoStack = new ArrayDeque<>();
-    private final Deque<List<Figura>> redoStack = new ArrayDeque<>();
+    // Undo/Redo por snapshots
+    private final Deque<java.util.List<Figura>> undoStack = new ArrayDeque<>();
+    private final Deque<java.util.List<Figura>> redoStack = new ArrayDeque<>();
+    private boolean modificado = false;
 
     public PanelDeDibujo() {
         setBackground(Color.WHITE);
-
-        InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        ActionMap am = getActionMap();
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()), "undo");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()), "redo");
-        am.put("undo", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                deshacer();
-            }
-        });
-        am.put("redo", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                rehacer();
-            }
-        });
+        setDoubleBuffered(true);
 
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                Point p = e.getPoint();
+                requestFocusInWindow();
+                puntoAnterior = e.getPoint();
 
-                if (e.isShiftDown()) {
-                    figuraActual = null;
-                    figuraSeleccionada = obtenerFiguraEnPunto(p);
+                if (herramienta == Herramienta.CUBETA) {
+                    Figura f = obtenerFiguraEnPunto(puntoAnterior);
+                    if (f instanceof FiguraRellenable fr) {
+                        pushUndo();
+                        fr.setColorRelleno(colorRelleno);
+                        figuraSeleccionada = f;
+                        modificado = true;
+                        repaint();
+                    }
+                    return;
+                }
+
+                if (herramienta == Herramienta.SELECCION) {
+                    Figura f = obtenerFiguraEnPunto(puntoAnterior);
+                    figuraSeleccionada = f;
+
+                    if (figuraSeleccionada != null) {
+                        handleActivo = detectarHandle(figuraSeleccionada.getBounds(), puntoAnterior);
+                        if (handleActivo >= 0 && figuraSeleccionada instanceof FiguraRellenable) {
+                            redimensionando = true;
+                            aspectRatioInicial = calcAspect(figuraSeleccionada.getBounds());
+                            pushUndo();
+                        } else {
+                            arrastrando = true;
+                            pushUndo();
+                        }
+                    }
                     repaint();
                     return;
                 }
 
-                snapshot();
-
-                switch (herramientaActual) {
-                    case LIBRE ->
-                        figuraActual = new DibujoLibre(p, grosor);
-                    case BORRADOR -> {
-                        figuraActual = new DibujoLibre(p, 20);
-                        figuraActual.setColorLinea(colorRelleno);
-                    }
-                    case RECTANGULO ->
-                        figuraActual = new Rectangulo(p);
-                    case LINEA ->
-                        figuraActual = new Linea(p);
-                    case TRIANGULO ->
-                        figuraActual = new Triangulo(p);
-                    case CIRCULO ->
-                        figuraActual = new Circulo(p);
-                    case PENTAGONO ->
-                        figuraActual = new Pentagono(p);
-                    case HEXAGONO ->
-                        figuraActual = new Hexagono(p);
-                    case ESTRELLA ->
-                        figuraActual = new Estrella(p);
-                    case OVALO ->
-                        figuraActual = new Ovalo(p);
-                    case ROMBO ->
-                        figuraActual = new Rombo(p);
-                    case FLECHA_ARRIBA ->
-                        figuraActual = new FlechaArriba(p);
-                    case FLECHA_ABAJO ->
-                        figuraActual = new FlechaAbajo(p);
-                    case FLECHA_DERECHA ->
-                        figuraActual = new FlechaDerecha(p);
-                    case FLECHA_IZQUIERDA ->
-                        figuraActual = new FlechaIzquierda(p);
-                    case TRAPECIO ->
-                        figuraActual = new Trapecio(p);
-                    case ARCO ->
-                        figuraActual = new Arco(p);
-                    case NUBE ->
-                        figuraActual = new Nube(p);
-                    case CORAZON ->
-                        figuraActual = new Corazon(p);
-                }
-
-                if (figuraActual != null) {
-                    if (herramientaActual != Herramienta.BORRADOR) {
+                // Creación de nuevas figuras (todas las herramientas)
+                switch (herramienta) {
+                    case LINEA -> {
+                        figuraActual = new Linea(puntoAnterior);
                         figuraActual.setColorLinea(colorLinea);
-                        figuraActual.setColorRelleno(colorRelleno);
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
                     }
-                    figuras.add(figuraActual);
-                    figuraSeleccionada = null;
+                    case RECTANGULO -> {
+                        Rectangulo r = new Rectangulo(puntoAnterior);
+                        r.setColorLinea(colorLinea);
+                        r.setColorRelleno(colorRelleno);
+                        figuraActual = r;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case CIRCULO -> {
+                        Circulo c = new Circulo(puntoAnterior);
+                        c.setColorLinea(colorLinea);
+                        c.setColorRelleno(colorRelleno);
+                        figuraActual = c;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case OVALO -> {
+                        Ovalo o = new Ovalo(puntoAnterior);
+                        o.setColorLinea(colorLinea);
+                        o.setColorRelleno(colorRelleno);
+                        figuraActual = o;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case TRIANGULO -> {
+                        Triangulo t = new Triangulo(puntoAnterior);
+                        t.setColorLinea(colorLinea);
+                        t.setColorRelleno(colorRelleno);
+                        figuraActual = t;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case ROMBO -> {
+                        Rombo r = new Rombo(puntoAnterior);
+                        r.setColorLinea(colorLinea);
+                        r.setColorRelleno(colorRelleno);
+                        figuraActual = r;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case TRAPECIO -> {
+                        Trapecio t = new Trapecio(puntoAnterior);
+                        t.setColorLinea(colorLinea);
+                        t.setColorRelleno(colorRelleno);
+                        figuraActual = t;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case PENTAGONO -> {
+                        Pentagono p = new Pentagono(puntoAnterior);
+                        p.setColorLinea(colorLinea);
+                        p.setColorRelleno(colorRelleno);
+                        figuraActual = p;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case HEXAGONO -> {
+                        Hexagono h = new Hexagono(puntoAnterior);
+                        h.setColorLinea(colorLinea);
+                        h.setColorRelleno(colorRelleno);
+                        figuraActual = h;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case ESTRELLA -> {
+                        Estrella s = new Estrella(puntoAnterior);
+                        s.setColorLinea(colorLinea);
+                        s.setColorRelleno(colorRelleno);
+                        figuraActual = s;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case NUBE -> {
+                        Nube n = new Nube(puntoAnterior);
+                        n.setColorLinea(colorLinea);
+                        n.setColorRelleno(colorRelleno);
+                        figuraActual = n;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case ARCO -> {
+                        Arco a = new Arco(puntoAnterior);
+                        a.setColorLinea(colorLinea);
+                        a.setColorRelleno(colorRelleno);
+                        figuraActual = a;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case FLECHA_ARRIBA -> {
+                        FlechaArriba f = new FlechaArriba(puntoAnterior);
+                        f.setColorLinea(colorLinea);
+                        f.setColorRelleno(colorRelleno);
+                        figuraActual = f;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case FLECHA_ABAJO -> {
+                        FlechaAbajo f = new FlechaAbajo(puntoAnterior);
+                        f.setColorLinea(colorLinea);
+                        f.setColorRelleno(colorRelleno);
+                        figuraActual = f;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case FLECHA_IZQUIERDA -> {
+                        FlechaIzquierda f = new FlechaIzquierda(puntoAnterior);
+                        f.setColorLinea(colorLinea);
+                        f.setColorRelleno(colorRelleno);
+                        figuraActual = f;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    case FLECHA_DERECHA -> {
+                        FlechaDerecha f = new FlechaDerecha(puntoAnterior);
+                        f.setColorLinea(colorLinea);
+                        f.setColorRelleno(colorRelleno);
+                        figuraActual = f;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
+                    default -> {}
                 }
-
+                modificado = true;
                 repaint();
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                cursorActual = e.getPoint();
+                Point p = e.getPoint();
+
+                if (herramienta == Herramienta.SELECCION) {
+                    if (figuraSeleccionada != null) {
+                        if (redimensionando && (figuraSeleccionada instanceof Rectangulo rr)) {
+                            Rectangle b = figuraSeleccionada.getBounds();
+                            Rectangle nb = ajustarBoundsConHandle(b, handleActivo, p, aspectRatioInicial);
+                            rr.iniciarProporcional();
+                            rr.actualizar(new Point(nb.x + nb.width, nb.y + nb.height));
+                            rr.terminarProporcional();
+                            repaint();
+                        } else if (redimensionando) {
+                            Rectangle b = figuraSeleccionada.getBounds();
+                            Rectangle nb = ajustarBoundsConHandle(b, handleActivo, p, aspectRatioInicial);
+                            figuraSeleccionada.desplazar(nb.x - b.x, nb.y - b.y);
+                            figuraSeleccionada.actualizar(new Point(nb.x + nb.width, nb.y + nb.height));
+                            repaint();
+                        } else if (arrastrando) {
+                            int dx = p.x - puntoAnterior.x;
+                            int dy = p.y - puntoAnterior.y;
+                            figuraSeleccionada.desplazar(dx, dy);
+                            puntoAnterior = p;
+                            repaint();
+                        }
+                    }
+                    return;
+                }
+
                 if (figuraActual != null) {
-                    figuraActual.actualizar(e.getPoint());
+                    figuraActual.actualizar(p);
                     repaint();
                 }
             }
 
             @Override
-            public void mouseMoved(MouseEvent e) {
-                cursorActual = e.getPoint();
-                repaint();
-            }
-
-            @Override
             public void mouseReleased(MouseEvent e) {
                 figuraActual = null;
-                repaint();
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                cursorActual = null;
-                repaint();
+                arrastrando = false;
+                redimensionando = false;
+                handleActivo = -1;
+                puntoAnterior = null;
             }
         };
 
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
+
+        // Atajo Delete para borrar selección
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "del");
+        getActionMap().put("del", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                if (figuraSeleccionada != null) {
+                    pushUndo();
+                    figuras.remove(figuraSeleccionada);
+                    figuraSeleccionada = null;
+                    modificado = true;
+                    repaint();
+                }
+            }
+        });
     }
 
-    private void snapshot() {
-        undoStack.push(deepCopy(figuras));
-        // Nueva acción invalida el futuro
+    // ==== Selección utilitaria ====
+    private static final int HANDLE_SIZE = 8;
+
+    private static double calcAspect(Rectangle b) {
+        return (b.height == 0) ? 1.0 : (double) b.width / (double) b.height;
+    }
+
+    private static int detectarHandle(Rectangle b, Point p) {
+        Rectangle[] hs = handles(b);
+        for (int i = 0; i < hs.length; i++) if (hs[i].contains(p)) return i;
+        return -1;
+    }
+
+    private static Rectangle[] handles(Rectangle b) {
+        int hs = HANDLE_SIZE;
+        int x = b.x, y = b.y, w = b.width, h = b.height;
+        return new Rectangle[] {
+                new Rectangle(x - hs/2,       y - hs/2,       hs, hs), // NW 0
+                new Rectangle(x + w/2 - hs/2, y - hs/2,       hs, hs), // N  1
+                new Rectangle(x + w - hs/2,   y - hs/2,       hs, hs), // NE 2
+                new Rectangle(x - hs/2,       y + h/2 - hs/2, hs, hs), // W  3
+                new Rectangle(x + w - hs/2,   y + h/2 - hs/2, hs, hs), // E  4
+                new Rectangle(x - hs/2,       y + h - hs/2,   hs, hs), // SW 5
+                new Rectangle(x + w/2 - hs/2, y + h - hs/2,   hs, hs), // S  6
+                new Rectangle(x + w - hs/2,   y + h - hs/2,   hs, hs)  // SE 7
+        };
+    }
+
+    private static Rectangle ajustarBoundsConHandle(Rectangle b, int handle, Point p, double aspect) {
+        int x1 = b.x, y1 = b.y, x2 = b.x + b.width, y2 = b.y + b.height;
+
+        switch (handle) {
+            case 0 -> { x1 = p.x; y1 = p.y; }
+            case 1 -> { y1 = p.y; }
+            case 2 -> { x2 = p.x; y1 = p.y; }
+            case 3 -> { x1 = p.x; }
+            case 4 -> { x2 = p.x; }
+            case 5 -> { x1 = p.x; y2 = p.y; }
+            case 6 -> { y2 = p.y; }
+            case 7 -> { x2 = p.x; y2 = p.y; }
+        }
+        int nx = Math.min(x1, x2);
+        int ny = Math.min(y1, y2);
+        int nw = Math.abs(x2 - x1);
+        int nh = Math.abs(y2 - y1);
+
+        if (nh == 0) nh = 1;
+        double cur = (double) nw / nh;
+
+        if (cur > aspect) nh = (int) Math.round(nw / aspect);
+        else             nw = (int) Math.round(nh * aspect);
+
+        // Reubica segun handle para mantener la esquina opuesta fija
+        switch (handle) {
+            case 0 -> { nx = x2 - nw; ny = y2 - nh; }
+            case 1 -> { nx = x1;      ny = y2 - nh; }
+            case 2 -> { nx = x1;      ny = y2 - nh; }
+            case 3 -> { nx = x2 - nw; ny = y1;      }
+            case 4 -> { nx = x1;      ny = y1;      }
+            case 5 -> { nx = x2 - nw; ny = y1;      }
+            case 6 -> { nx = x1;      ny = y1;      }
+            case 7 -> { nx = x1;      ny = y1;      }
+        }
+        return new Rectangle(nx, ny, nw, nh);
+    }
+
+    // ==== Pintado ====
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        for (Figura f : figuras) f.dibujar(g2);
+
+        // Bounding box y handles SOLO si es rellenable
+        if (figuraSeleccionada != null && (figuraSeleccionada instanceof FiguraRellenable)) {
+            Rectangle b = figuraSeleccionada.getBounds();
+            Stroke old = g2.getStroke();
+            float[] dash = {6f, 6f};
+            g2.setColor(new Color(220, 50, 50));
+            g2.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, dash, 0f));
+            g2.drawRect(b.x, b.y, b.width, b.height);
+            g2.setStroke(old);
+
+            for (Rectangle h : handles(b)) g2.fillRect(h.x, h.y, h.width, h.height);
+        }
+    }
+
+    // ==== API para ventana ====
+    public void setHerramienta(Herramienta h) { this.herramienta = h; }
+    public Herramienta getHerramienta() { return herramienta; }
+    public void setColorLinea(Color c) { this.colorLinea = c; }
+    public void setColorRelleno(Color c) { this.colorRelleno = c; }
+
+    // ==== Selección ====
+    private Figura obtenerFiguraEnPunto(Point p) {
+        for (int i = figuras.size() - 1; i >= 0; i--) {
+            Figura f = figuras.get(i);
+            if (f.getBounds().contains(p)) return f;
+        }
+        return null;
+    }
+
+    // ==== Undo/Redo ====
+    private void pushUndo() {
+        java.util.List<Figura> snap = new ArrayList<>();
+        for (Figura f : figuras) snap.add(f.clonarConDesplazamiento(0, 0));
+        undoStack.push(snap);
         redoStack.clear();
     }
 
-    private List<Figura> deepCopy(List<Figura> src) {
-        List<Figura> copia = new ArrayList<>(src.size());
-        for (Figura f : src) {
-            copia.add(f.clonarConDesplazamiento(0, 0));
-        }
-        return copia;
-    }
-
-    public void deshacer() {
-        if (undoStack.isEmpty()) {
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        redoStack.push(deepCopy(figuras));
-        List<Figura> anterior = undoStack.pop();
-        figuras.clear();
-        figuras.addAll(anterior);
-        figuraSeleccionada = null;
-        repaint();
-    }
-
-    public void rehacer() {
-        if (redoStack.isEmpty()) {
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        undoStack.push(deepCopy(figuras));
-        List<Figura> futuro = redoStack.pop();
-        figuras.clear();
-        figuras.addAll(futuro);
-        figuraSeleccionada = null;
-        repaint();
-    }
-
-    public void setHerramienta(Herramienta herramienta) {
-        this.herramientaActual = herramienta;
-    }
-
-    public void setColorLinea(Color color) {
-        this.colorLinea = color;
-    }
-
-    public void setColorRelleno(Color color) {
-        this.colorRelleno = color;
-    }
-
-    public void setGrosor(int grosor) {
-        this.grosor = grosor;
-    }
-
-    public void limpiar() {
-        snapshot();
-        figuras.clear();
-        figuraSeleccionada = null;
-        repaint();
-    }
-
-    public void guardarComoImagen(String ruta, String formato) {
-        BufferedImage imagen = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = imagen.createGraphics();
-        paint(g2);
-        g2.dispose();
-        try {
-            ImageIO.write(imagen, formato, new File(ruta));
-            JOptionPane.showMessageDialog(this, "Imagen guardada en: " + ruta);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    public void copiarFiguraSeleccionada() {
-        if (figuraSeleccionada == null) {
-            JOptionPane.showMessageDialog(this, "Usa SHIFT + Clic sobre una figura para seleccionarla.");
-            return;
-        }
-        figuraCopiada = figuraSeleccionada.clonarConDesplazamiento(0, 0);
-        JOptionPane.showMessageDialog(this, "Figura copiada.");
-    }
-
-    public void pegarFigura() {
-        if (figuraCopiada == null) {
-            JOptionPane.showMessageDialog(this, "No hay figura copiada.");
-            return;
-        }
-
-        snapshot();
-        Figura nueva = figuraCopiada.clonarConDesplazamiento(20, 20);
-        if (nueva != null) {
-            figuras.add(nueva);
-            figuraSeleccionada = nueva;
+    public void undo() {
+        if (!undoStack.isEmpty()) {
+            redoStack.push(new ArrayList<>(figuras));
+            figuras.clear();
+            figuras.addAll(undoStack.pop());
+            figuraSeleccionada = null;
             repaint();
         }
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        for (Figura f : figuras) {
-            f.dibujar(g);
-        }
-
-        if (figuraSeleccionada != null) {
-            Rectangle r = figuraSeleccionada.getBounds();
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(Color.RED);
-            g2.setStroke(new BasicStroke(2));
-            g2.drawRect(r.x - 3, r.y - 3, r.width + 6, r.height + 6);
-        }
-
-        if (herramientaActual == Herramienta.BORRADOR && cursorActual != null) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(Color.GRAY);
-            int tam = 20;
-            g2.drawOval(cursorActual.x - tam / 2, cursorActual.y - tam / 2, tam, tam);
+    public void redo() {
+        if (!redoStack.isEmpty()) {
+            undoStack.push(new ArrayList<>(figuras));
+            figuras.clear();
+            figuras.addAll(redoStack.pop());
+            figuraSeleccionada = null;
+            repaint();
         }
     }
 
-    private Figura obtenerFiguraEnPunto(Point p) {
-        for (int i = figuras.size() - 1; i >= 0; i--) {
-            Figura f = figuras.get(i);
-            if (f.getBounds().contains(p)) {
-                return f;
-            }
+    // ==== Exportar PNG sin overlays ====
+    public void exportarComoPNG(File f) throws Exception {
+        Figura sel = figuraSeleccionada;
+        figuraSeleccionada = null; // oculta overlays
+        BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        paint(g2);
+        g2.dispose();
+        ImageIO.write(img, "png", f);
+        figuraSeleccionada = sel;
+    }
+
+    // ==== Guardar / Abrir proyecto ====
+    public void guardarProyecto(File f) throws Exception {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
+            oos.writeObject(figuras);
+            modificado = false;
         }
-        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void abrirProyecto(File f) throws Exception {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+            Object obj = ois.readObject();
+            if (obj instanceof java.util.List<?> lista) {
+                figuras.clear();
+                for (Object o : lista) figuras.add((Figura) o);
+                figuraSeleccionada = null;
+                modificado = false;
+                repaint();
+            } else throw new IOException("Formato de proyecto inválido.");
+        }
+    }
+
+    public boolean isModificado() { return modificado; }
+    public void limpiarLienzo() {
+        figuras.clear();
+        figuraSeleccionada = null;
+        modificado = true;
+        repaint();
     }
 }

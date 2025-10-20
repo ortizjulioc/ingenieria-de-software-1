@@ -1,68 +1,81 @@
 package ventanas;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
-public class DibujoLibre extends Figura {
-    private final ArrayList<Point> puntos = new ArrayList<>();
-    private final int grosor;
+/**
+ * Figura de dibujo libre (tipo lápiz).
+ * Mantiene una lista de puntos y un grosor de línea.
+ */
+public class DibujoLibre extends Figura implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public DibujoLibre(Point puntoInicial, int grosor) {
-        this.puntos.add(puntoInicial);
+    private final List<Point> puntos = new ArrayList<>();
+    private float grosor = 2.0f;
+
+    public DibujoLibre(Point inicio, float grosor) {
         this.grosor = grosor;
+        puntos.add(inicio);
+        bounds = new Rectangle(inicio.x, inicio.y, 1, 1);
     }
 
     @Override
     public void dibujar(Graphics g) {
-        if (puntos.size() < 2) return;
-
         Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setColor(colorLinea);
-
-        // Si el color de línea es igual al relleno => tratamos como borrador
-        if (colorLinea.equals(colorRelleno)) {
-            g2.setStroke(new BasicStroke(20, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        } else {
-            g2.setStroke(new BasicStroke(grosor, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        }
+        g2.setStroke(new BasicStroke(grosor, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
         for (int i = 1; i < puntos.size(); i++) {
-            Point a = puntos.get(i - 1);
-            Point b = puntos.get(i);
-            g2.drawLine(a.x, a.y, b.x, b.y);
+            Point p1 = puntos.get(i - 1);
+            Point p2 = puntos.get(i);
+            g2.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
     }
 
     @Override
     public void actualizar(Point puntoActual) {
         puntos.add(puntoActual);
+        actualizarBounds();
+    }
+
+    private void actualizarBounds() {
+        if (puntos.isEmpty()) return;
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
+        for (Point p : puntos) {
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
+        }
+        bounds = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    @Override
+    public void desplazar(int dx, int dy) {
+        for (int i = 0; i < puntos.size(); i++) {
+            Point p = puntos.get(i);
+            puntos.set(i, new Point(p.x + dx, p.y + dy));
+        }
+        bounds.translate(dx, dy);
     }
 
     @Override
     public Figura clonarConDesplazamiento(int dx, int dy) {
-        if (puntos.isEmpty()) return null;
-        DibujoLibre copia = new DibujoLibre(new Point(puntos.get(0).x + dx, puntos.get(0).y + dy), grosor);
-        for (int i = 1; i < puntos.size(); i++) {
-            Point p = puntos.get(i);
-            copia.puntos.add(new Point(p.x + dx, p.y + dy));
+        DibujoLibre d = new DibujoLibre(new Point(0, 0), this.grosor);
+        d.puntos.clear();
+        for (Point p : this.puntos) {
+            d.puntos.add(new Point(p.x + dx, p.y + dy));
         }
-        copia.setColorLinea(colorLinea);
-        copia.setColorRelleno(colorRelleno);
-        return copia;
+        d.colorLinea = this.colorLinea;
+        d.grosor = this.grosor;
+        d.actualizarBounds();
+        return d;
     }
 
-    @Override
-    public Rectangle getBounds() {
-        if (puntos.isEmpty()) return new Rectangle(0, 0, 0, 0);
-        int minX = puntos.get(0).x, maxX = puntos.get(0).x;
-        int minY = puntos.get(0).y, maxY = puntos.get(0).y;
-        for (Point p : puntos) {
-            minX = Math.min(minX, p.x);
-            maxX = Math.max(maxX, p.x);
-            minY = Math.min(minY, p.y);
-            maxY = Math.max(maxY, p.y);
-        }
-        int pad = colorLinea.equals(colorRelleno) ? 12 : Math.max(2, grosor / 2);
-        return new Rectangle(minX - pad, minY - pad, (maxX - minX) + 2 * pad, (maxY - minY) + 2 * pad);
-    }
+    public float getGrosor() { return grosor; }
+    public void setGrosor(float g) { this.grosor = g; }
 }

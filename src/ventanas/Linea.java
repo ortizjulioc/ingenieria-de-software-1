@@ -2,41 +2,56 @@ package ventanas;
 
 import java.awt.*;
 
+/**
+ * Figura no rellenable. No muestra bounding box ni handles.
+ */
 public class Linea extends Figura {
-    private Point puntoInicial;
-    private Point puntoFinal;
+    private static final long serialVersionUID = 1L;
 
-    public Linea(Point puntoInicial) {
-        this.puntoInicial = puntoInicial;
-        this.puntoFinal = puntoInicial;
+    private Point p1, p2;
+
+    public Linea(Point inicio) {
+        this.p1 = inicio;
+        this.p2 = inicio;
+        actualizarBounds();
+    }
+
+    private void actualizarBounds() {
+        int x = Math.min(p1.x, p2.x);
+        int y = Math.min(p1.y, p2.y);
+        int w = Math.abs(p2.x - p1.x);
+        int h = Math.abs(p2.y - p1.y);
+        this.bounds = new Rectangle(x, y, w, h);
     }
 
     @Override
     public void dibujar(Graphics g) {
-        g.setColor(colorLinea);
-        g.drawLine(puntoInicial.x, puntoInicial.y, puntoFinal.x, puntoFinal.y);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(colorLinea);
+        g2.drawLine(p1.x, p1.y, p2.x, p2.y);
     }
 
     @Override
-    public void actualizar(Point puntoFinal) { this.puntoFinal = puntoFinal; }
+    public void actualizar(Point puntoActual) {
+        this.p2 = puntoActual;
+        actualizarBounds();
+    }
+
+    @Override
+    public void desplazar(int dx, int dy) {
+        this.p1 = new Point(p1.x + dx, p1.y + dy);
+        this.p2 = new Point(p2.x + dx, p2.y + dy);
+        actualizarBounds();
+    }
 
     @Override
     public Figura clonarConDesplazamiento(int dx, int dy) {
-        Linea copia = new Linea(new Point(puntoInicial.x + dx, puntoInicial.y + dy));
-        copia.puntoFinal = new Point(puntoFinal.x + dx, puntoFinal.y + dy);
-        copia.setColorLinea(colorLinea);
-        copia.setColorRelleno(colorRelleno);
-        return copia;
-    }
-
-    @Override
-    public Rectangle getBounds() {
-        int x = Math.min(puntoInicial.x, puntoFinal.x);
-        int y = Math.min(puntoInicial.y, puntoFinal.y);
-        int w = Math.abs(puntoFinal.x - puntoInicial.x);
-        int h = Math.abs(puntoFinal.y - puntoInicial.y);
-        // margen pequeño para poder hacer click en líneas finas
-        int pad = 6;
-        return new Rectangle(x - pad/2, y - pad/2, Math.max(1, w + pad), Math.max(1, h + pad));
+        Linea l = new Linea(new Point(p1.x + dx, p1.y + dy));
+        l.p2 = new Point(p2.x + dx, p2.y + dy);
+        l.colorLinea = this.colorLinea;
+        l.colorRelleno = this.colorRelleno; // no se usa pero se conserva
+        l.actualizarBounds();
+        return l;
     }
 }

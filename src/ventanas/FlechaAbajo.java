@@ -1,77 +1,59 @@
 package ventanas;
 
 import java.awt.*;
+import java.awt.geom.Path2D;
 
-public class FlechaAbajo extends Figura {
+public class FlechaAbajo extends Figura implements FiguraRellenable {
+    private static final long serialVersionUID = 1L;
     private Point inicio;
-    private Point fin;
 
     public FlechaAbajo(Point inicio) {
         this.inicio = inicio;
-        this.fin = inicio;
+        setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-    @Override
-    public void dibujar(Graphics g) {
-        int x = Math.min(inicio.x, fin.x);
-        int y = Math.min(inicio.y, fin.y);
-        int w = Math.abs(fin.x - inicio.x);
-        int h = Math.abs(fin.y - inicio.y);
-        
-        int centroX = x + w / 2;
-        
-        // Puntos de la flecha (punta abajo)
-        int[] puntosX = {
-            centroX,           // punta de la flecha
-            x + w,             // esquina superior derecha
-            x + w * 3/4,       // base derecha
-            x + w * 3/4,       // esquina derecha del palo
-            x + w * 1/4,       // esquina izquierda del palo
-            x + w * 1/4,       // base izquierda
-            x                  // esquina superior izquierda
-        };
-        
-        int[] puntosY = {
-            y + h,             // punta de la flecha
-            y + h * 1/3,       // esquina superior derecha
-            y + h * 1/3,       // base derecha
-            y,                 // esquina derecha del palo
-            y,                 // esquina izquierda del palo
-            y + h * 1/3,       // base izquierda
-            y + h * 1/3        // esquina superior izquierda
-        };
+    private Shape buildShape() {
+        int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
+        int shaftW = (int) (w * 0.3);
+        int shaftX = x + (w - shaftW)/2;
+        int headH = (int) (h * 0.4);
 
-        if (colorRelleno != null) {
-            g.setColor(colorRelleno);
-            g.fillPolygon(puntosX, puntosY, 7);
-        }
-        
-        if (colorLinea != null) {
-            g.setColor(colorLinea);
-            g.drawPolygon(puntosX, puntosY, 7);
-        }
+        Path2D p = new Path2D.Double();
+        // asta
+        p.moveTo(shaftX, y);
+        p.lineTo(shaftX + shaftW, y);
+        p.lineTo(shaftX + shaftW, y + h - headH);
+        p.lineTo(shaftX, y + h - headH);
+        p.closePath();
+        // cabeza
+        p.moveTo(x, y + h - headH);
+        p.lineTo(x + w, y + h - headH);
+        p.lineTo(x + w/2.0, y + h);
+        p.closePath();
+        return p;
     }
 
-    @Override
-    public void actualizar(Point puntoActual) { 
-        this.fin = puntoActual; 
+    @Override public void dibujar(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Shape s = buildShape();
+        g2.setColor(colorRelleno); g2.fill(s);
+        g2.setColor(colorLinea);   g2.draw(s);
     }
 
-    @Override
-    public Figura clonarConDesplazamiento(int dx, int dy) {
-        FlechaAbajo copia = new FlechaAbajo(new Point(inicio.x + dx, inicio.y + dy));
-        copia.fin = new Point(fin.x + dx, fin.y + dy);
-        copia.setColorLinea(colorLinea);
-        copia.setColorRelleno(colorRelleno);
-        return copia;
+    @Override public void actualizar(Point puntoActual) {
+        setBoundsNormalized(inicio.x, inicio.y, puntoActual.x, puntoActual.y);
     }
 
-    @Override
-    public Rectangle getBounds() {
-        int x = Math.min(inicio.x, fin.x);
-        int y = Math.min(inicio.y, fin.y);
-        int w = Math.abs(fin.x - inicio.x);
-        int h = Math.abs(fin.y - inicio.y);
-        return new Rectangle(x, y, w, h);
+    @Override public void desplazar(int dx, int dy) {
+        bounds = new Rectangle(bounds.x + dx, bounds.y + dy, bounds.width, bounds.height);
+        inicio = new Point(inicio.x + dx, inicio.y + dy);
+    }
+
+    @Override public Figura clonarConDesplazamiento(int dx, int dy) {
+        FlechaAbajo f = new FlechaAbajo(new Point(inicio.x + dx, inicio.y + dy));
+        f.colorLinea = this.colorLinea; f.colorRelleno = this.colorRelleno;
+        f.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
+        return f;
     }
 }

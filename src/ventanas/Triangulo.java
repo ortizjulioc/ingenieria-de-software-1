@@ -1,55 +1,64 @@
 package ventanas;
 
 import java.awt.*;
+import java.awt.geom.Path2D;
 
-public class Triangulo extends Figura {
+/** Triángulo isósceles rellenable dentro del bounds. */
+public class Triangulo extends Figura implements FiguraRellenable {
+    private static final long serialVersionUID = 1L;
+
     private Point inicio;
-    private Point fin;
 
     public Triangulo(Point inicio) {
         this.inicio = inicio;
-        this.fin = inicio;
+        setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-    @Override
-    public void dibujar(Graphics g) {
-        Polygon poly = getPolygon();
-        g.setColor(colorRelleno);
-        g.fillPolygon(poly);
-        g.setColor(colorLinea);
-        g.drawPolygon(poly);
-    }
+    private Shape buildShape() {
+        int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
+        double x1 = x + w / 2.0;     // vértice superior (centro)
+        double y1 = y;
+        double x2 = x;               // inferior izquierdo
+        double y2 = y + h;
+        double x3 = x + w;           // inferior derecho
+        double y3 = y + h;
 
-    private Polygon getPolygon() {
-        int x1 = inicio.x, y1 = inicio.y;
-        int x2 = fin.x, y2 = fin.y;
-
-        int bx1 = x1, by1 = y2;      // base izquierda
-        int bx2 = x2, by2 = y2;      // base derecha
-        int vx  = (x1 + x2) / 2;     // vértice superior/ inferior según arrastre
-        int vy  = y1;
-
-        Polygon p = new Polygon();
-        p.addPoint(bx1, by1);
-        p.addPoint(bx2, by2);
-        p.addPoint(vx, vy);
+        Path2D p = new Path2D.Double();
+        p.moveTo(x1, y1);
+        p.lineTo(x2, y2);
+        p.lineTo(x3, y3);
+        p.closePath();
         return p;
     }
 
     @Override
-    public void actualizar(Point puntoActual) { this.fin = puntoActual; }
-
-    @Override
-    public Figura clonarConDesplazamiento(int dx, int dy) {
-        Triangulo copia = new Triangulo(new Point(inicio.x + dx, inicio.y + dy));
-        copia.fin = new Point(fin.x + dx, fin.y + dy);
-        copia.setColorLinea(colorLinea);
-        copia.setColorRelleno(colorRelleno);
-        return copia;
+    public void dibujar(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Shape s = buildShape();
+        g2.setColor(colorRelleno);
+        g2.fill(s);
+        g2.setColor(colorLinea);
+        g2.draw(s);
     }
 
     @Override
-    public Rectangle getBounds() {
-        return getPolygon().getBounds();
+    public void actualizar(Point puntoActual) {
+        setBoundsNormalized(inicio.x, inicio.y, puntoActual.x, puntoActual.y);
+    }
+
+    @Override
+    public void desplazar(int dx, int dy) {
+        bounds = new Rectangle(bounds.x + dx, bounds.y + dy, bounds.width, bounds.height);
+        inicio = new Point(inicio.x + dx, inicio.y + dy);
+    }
+
+    @Override
+    public Figura clonarConDesplazamiento(int dx, int dy) {
+        Triangulo t = new Triangulo(new Point(inicio.x + dx, inicio.y + dy));
+        t.colorLinea = this.colorLinea;
+        t.colorRelleno = this.colorRelleno;
+        t.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
+        return t;
     }
 }

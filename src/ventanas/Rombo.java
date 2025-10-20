@@ -1,60 +1,49 @@
 package ventanas;
 
 import java.awt.*;
+import java.awt.geom.Path2D;
 
-public class Rombo extends Figura {
+public class Rombo extends Figura implements FiguraRellenable {
+    private static final long serialVersionUID = 1L;
     private Point inicio;
-    private Point fin;
 
     public Rombo(Point inicio) {
         this.inicio = inicio;
-        this.fin = inicio;
+        setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-    @Override
-    public void dibujar(Graphics g) {
-        int x = Math.min(inicio.x, fin.x);
-        int y = Math.min(inicio.y, fin.y);
-        int w = Math.abs(fin.x - inicio.x);
-        int h = Math.abs(fin.y - inicio.y);
-        
-        int centroX = x + w / 2;
-        int centroY = y + h / 2;
-        
-        int[] puntosX = {centroX, x + w, centroX, x};
-        int[] puntosY = {y, centroY, y + h, centroY};
-
-        if (colorRelleno != null) {
-            g.setColor(colorRelleno);
-            g.fillPolygon(puntosX, puntosY, 4);
-        }
-        
-        if (colorLinea != null) {
-            g.setColor(colorLinea);
-            g.drawPolygon(puntosX, puntosY, 4);
-        }
+    private Shape buildShape() {
+        int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
+        Path2D p = new Path2D.Double();
+        p.moveTo(x + w/2.0, y);         // arriba
+        p.lineTo(x + w,     y + h/2.0); // derecha
+        p.lineTo(x + w/2.0, y + h);     // abajo
+        p.lineTo(x,         y + h/2.0); // izquierda
+        p.closePath();
+        return p;
     }
 
-    @Override
-    public void actualizar(Point puntoActual) { 
-        this.fin = puntoActual; 
+    @Override public void dibujar(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Shape s = buildShape();
+        g2.setColor(colorRelleno); g2.fill(s);
+        g2.setColor(colorLinea);   g2.draw(s);
     }
 
-    @Override
-    public Figura clonarConDesplazamiento(int dx, int dy) {
-        Rombo copia = new Rombo(new Point(inicio.x + dx, inicio.y + dy));
-        copia.fin = new Point(fin.x + dx, fin.y + dy);
-        copia.setColorLinea(colorLinea);
-        copia.setColorRelleno(colorRelleno);
-        return copia;
+    @Override public void actualizar(Point puntoActual) {
+        setBoundsNormalized(inicio.x, inicio.y, puntoActual.x, puntoActual.y);
     }
 
-    @Override
-    public Rectangle getBounds() {
-        int x = Math.min(inicio.x, fin.x);
-        int y = Math.min(inicio.y, fin.y);
-        int w = Math.abs(fin.x - inicio.x);
-        int h = Math.abs(fin.y - inicio.y);
-        return new Rectangle(x, y, w, h);
+    @Override public void desplazar(int dx, int dy) {
+        bounds = new Rectangle(bounds.x + dx, bounds.y + dy, bounds.width, bounds.height);
+        inicio = new Point(inicio.x + dx, inicio.y + dy);
+    }
+
+    @Override public Figura clonarConDesplazamiento(int dx, int dy) {
+        Rombo r = new Rombo(new Point(inicio.x + dx, inicio.y + dy));
+        r.colorLinea = this.colorLinea; r.colorRelleno = this.colorRelleno;
+        r.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
+        return r;
     }
 }
