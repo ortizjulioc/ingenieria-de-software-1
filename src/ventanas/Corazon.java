@@ -3,7 +3,10 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Path2D;
 
-/** Corazón rellenable basado en curvas Bezier, ajustado al bounds. */
+/**
+ * Corazón rellenable que utiliza el diseño (proporciones Bezier) proporcionado por el usuario,
+ * pero integrado al framework del proyecto (usa bounds, es FiguraRellenable, soporta mover/resize).
+ */
 public class Corazon extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 
@@ -14,46 +17,61 @@ public class Corazon extends Figura implements FiguraRellenable {
         setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
+    /** Construye el Path con la misma geometría del snippet del usuario, adaptada a bounds. */
     private Shape buildShape() {
-        double x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
+        int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
         double cx = x + w / 2.0;
-        double cy = y + h / 2.0;
+        double topY = y + h * 0.3;
 
-        // Normalizado en [0,1], luego escalado a bounds
-        Path2D p = new Path2D.Double();
-        // punto inferior
-        double px0 = cx;
-        double py0 = y + h;
-        p.moveTo(px0, py0);
+        Path2D path = new Path2D.Double();
+        // Punta inferior (centro abajo)
+        path.moveTo(cx, y + h);
 
-        // lóbulo izquierdo
-        p.curveTo(cx - 0.25*w, y + 0.85*h,
-                  x,            y + 0.60*h,
-                  x + 0.20*w,   y + 0.35*h);
-        p.curveTo(x + 0.30*w,  y + 0.15*h,
-                  cx - 0.05*w, y,
-                  cx,           y + 0.20*h);
+        // CURVA 1: lado izquierdo
+        path.curveTo(
+                cx - w * 0.1, y + h * 0.9,  // Control 1
+                x,            y + h * 0.6,  // Control 2
+                x,            topY          // Fin
+        );
 
-        // lóbulo derecho
-        p.curveTo(cx + 0.05*w, y,
-                  x + 0.70*w,  y + 0.15*h,
-                  x + 0.80*w,  y + 0.35*h);
-        p.curveTo(x + w,       y + 0.60*h,
-                  cx + 0.25*w, y + 0.85*h,
-                  px0,         py0);
+        // CURVA 2: lóbulo superior izquierdo
+        path.curveTo(
+                x,            y - h * 0.1,   // Control 1 (sube)
+                cx - w * 0.15, y - h * 0.1,  // Control 2 (arriba)
+                cx,           topY           // Fin (centro superior)
+        );
 
-        p.closePath();
-        return p;
+        // CURVA 3: lóbulo superior derecho
+        path.curveTo(
+                cx + w * 0.15, y - h * 0.1,  // Control 1 (arriba)
+                x + w,         y - h * 0.1,  // Control 2 (sube)
+                x + w,         topY          // Fin
+        );
+
+        // CURVA 4: lado derecho
+        path.curveTo(
+                x + w,         y + h * 0.6,  // Control 1
+                cx + w * 0.1,  y + h * 0.9,  // Control 2
+                cx,            y + h         // Fin (regresa a la punta)
+        );
+
+        path.closePath();
+        return path;
     }
 
     @Override
     public void dibujar(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         Shape s = buildShape();
-        g2.setColor(colorRelleno);
+        // Relleno
+        g2.setColor(getColorRelleno());
         g2.fill(s);
-        g2.setColor(colorLinea);
+
+        // Contorno
+        g2.setColor(getColorLinea());
+        g2.setStroke(new BasicStroke(2f));
         g2.draw(s);
     }
 

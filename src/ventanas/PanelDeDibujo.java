@@ -9,9 +9,8 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 /**
- * Panel principal con TODAS las herramientas de creación integradas.
- * Incluye: selección, arrastre, redimensionado proporcional (rellenables),
- * cubeta de pintura, exportar PNG (ARGB) y guardar/abrir proyecto.
+ * Panel principal con TODAS las herramientas, Dibujo Libre, Undo/Redo y Copiar/Pegar.
+ * Agregado: herramienta CORAZON.
  */
 public class PanelDeDibujo extends JPanel {
 
@@ -29,10 +28,12 @@ public class PanelDeDibujo extends JPanel {
         ESTRELLA,
         NUBE,
         ARCO,
+        CORAZON,
         FLECHA_ARRIBA,
         FLECHA_ABAJO,
         FLECHA_IZQUIERDA,
         FLECHA_DERECHA,
+        DIBUJO_LIBRE,
         CUBETA
     }
 
@@ -42,6 +43,9 @@ public class PanelDeDibujo extends JPanel {
     private Herramienta herramienta = Herramienta.SELECCION;
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = Color.WHITE;
+
+    // Grosor del pincel para Dibujo Libre
+    private float grosorActual = 2.0f;
 
     // Selección / arrastre / resize
     private Figura figuraSeleccionada = null;
@@ -55,6 +59,9 @@ public class PanelDeDibujo extends JPanel {
     private final Deque<java.util.List<Figura>> undoStack = new ArrayDeque<>();
     private final Deque<java.util.List<Figura>> redoStack = new ArrayDeque<>();
     private boolean modificado = false;
+
+    // Portapapeles (copia de figuras)
+    private java.util.List<Figura> portapapeles = new ArrayList<>();
 
     public PanelDeDibujo() {
         setBackground(Color.WHITE);
@@ -97,7 +104,19 @@ public class PanelDeDibujo extends JPanel {
                     return;
                 }
 
-                // Creación de nuevas figuras (todas las herramientas)
+                if (herramienta == Herramienta.DIBUJO_LIBRE) {
+                    DibujoLibre dl = new DibujoLibre(puntoAnterior, grosorActual);
+                    dl.setColorLinea(colorLinea);
+                    figuraActual = dl;
+                    figuras.add(figuraActual);
+                    figuraSeleccionada = figuraActual;
+                    pushUndo();
+                    modificado = true;
+                    repaint();
+                    return;
+                }
+
+                // Creación de nuevas figuras
                 switch (herramienta) {
                     case LINEA -> {
                         figuraActual = new Linea(puntoAnterior);
@@ -205,6 +224,15 @@ public class PanelDeDibujo extends JPanel {
                         figuraSeleccionada = figuraActual;
                         pushUndo();
                     }
+                    case CORAZON -> {
+                        Corazon c = new Corazon(puntoAnterior);
+                        c.setColorLinea(colorLinea);
+                        c.setColorRelleno(colorRelleno);
+                        figuraActual = c;
+                        figuras.add(figuraActual);
+                        figuraSeleccionada = figuraActual;
+                        pushUndo();
+                    }
                     case FLECHA_ARRIBA -> {
                         FlechaArriba f = new FlechaArriba(puntoAnterior);
                         f.setColorLinea(colorLinea);
@@ -277,6 +305,12 @@ public class PanelDeDibujo extends JPanel {
                     return;
                 }
 
+                if (herramienta == Herramienta.DIBUJO_LIBRE && figuraActual instanceof DibujoLibre dl) {
+                    dl.agregarPunto(p);
+                    repaint();
+                    return;
+                }
+
                 if (figuraActual != null) {
                     figuraActual.actualizar(p);
                     repaint();
@@ -296,7 +330,7 @@ public class PanelDeDibujo extends JPanel {
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
 
-        // Atajo Delete para borrar selección
+        // Atajos de teclado
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "del");
         getActionMap().put("del", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
@@ -308,6 +342,37 @@ public class PanelDeDibujo extends JPanel {
                     repaint();
                 }
             }
+        });
+        // Ctrl+Z
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()), "undo");
+        getActionMap().put("undo", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { undo(); }
+        });
+        // Ctrl+Y
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()), "redo");
+        getActionMap().put("redo", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { redo(); }
+        });
+        // Ctrl+C
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()), "copy");
+        getActionMap().put("copy", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { copiarSeleccion(); }
+        });
+        // Ctrl+V
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()), "paste");
+        getActionMap().put("paste", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { pegar(); }
+        });
+        // Ajuste rápido de grosor con + y -
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "incStroke");
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "incStroke");
+        getActionMap().put("incStroke", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { setGrosorActual(grosorActual + 1f); ajustarGrosorSeleccionado(grosorActual); }
+        });
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "decStroke");
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0), "decStroke");
+        getActionMap().put("decStroke", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { setGrosorActual(Math.max(1f, grosorActual - 1f)); ajustarGrosorSeleccionado(grosorActual); }
         });
     }
 
@@ -405,6 +470,16 @@ public class PanelDeDibujo extends JPanel {
     public Herramienta getHerramienta() { return herramienta; }
     public void setColorLinea(Color c) { this.colorLinea = c; }
     public void setColorRelleno(Color c) { this.colorRelleno = c; }
+    public void setGrosorActual(float g) { this.grosorActual = Math.max(1f, g); }
+    public float getGrosorActual() { return grosorActual; }
+
+    /** Si la selección es DibujoLibre, ajusta su grosor y repinta. */
+    public void ajustarGrosorSeleccionado(float g) {
+        if (figuraSeleccionada instanceof DibujoLibre dl) {
+            dl.setGrosor(g);
+            repaint();
+        }
+    }
 
     // ==== Selección ====
     private Figura obtenerFiguraEnPunto(Point p) {
@@ -413,6 +488,23 @@ public class PanelDeDibujo extends JPanel {
             if (f.getBounds().contains(p)) return f;
         }
         return null;
+    }
+
+    // ==== Copiar / Pegar ====
+    public void copiarSeleccion() {
+        portapapeles.clear();
+        if (figuraSeleccionada != null) {
+            portapapeles.add(figuraSeleccionada.clonarConDesplazamiento(0, 0));
+        }
+    }
+
+    public void pegar() {
+        if (portapapeles.isEmpty()) return;
+        pushUndo();
+        figuras.add(portapapeles.get(0).clonarConDesplazamiento(20, 20));
+        figuraSeleccionada = figuras.get(figuras.size() - 1);
+        modificado = true;
+        repaint();
     }
 
     // ==== Undo/Redo ====

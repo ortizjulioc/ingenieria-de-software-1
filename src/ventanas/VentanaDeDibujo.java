@@ -5,16 +5,18 @@ import java.awt.*;
 import java.io.File;
 
 /**
- * Ventana principal con toolbar que incluye botones para TODAS las herramientas.
+ * Ventana principal: añade Dibujo Libre, grosor del pincel,
+ * Editar (Deshacer/Rehacer/Copiar/Pegar) y botón de Corazón.
  */
 public class VentanaDeDibujo extends JFrame {
 
     private final PanelDeDibujo panel;
+    private JSpinner spinnerGrosor;
 
     public VentanaDeDibujo() {
         super("Editor de Dibujo 2D");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1100, 700);
+        setSize(1150, 720);
         setLocationRelativeTo(null);
 
         panel = new PanelDeDibujo();
@@ -26,6 +28,8 @@ public class VentanaDeDibujo extends JFrame {
 
     private JMenuBar crearMenu() {
         JMenuBar mb = new JMenuBar();
+
+        // ===== Archivo =====
         JMenu mArchivo = new JMenu("Archivo");
 
         JMenuItem itNuevo = new JMenuItem("Nuevo");
@@ -88,8 +92,25 @@ public class VentanaDeDibujo extends JFrame {
         mArchivo.addSeparator();
         mArchivo.add(itGuardar);
         mArchivo.add(itExportar);
-
         mb.add(mArchivo);
+
+        // ===== Editar =====
+        JMenu mEditar = new JMenu("Editar");
+        JMenuItem itUndo = new JMenuItem("Deshacer (Ctrl+Z)");
+        itUndo.addActionListener(e -> panel.undo());
+        JMenuItem itRedo = new JMenuItem("Rehacer (Ctrl+Y)");
+        itRedo.addActionListener(e -> panel.redo());
+        JMenuItem itCopy = new JMenuItem("Copiar (Ctrl+C)");
+        itCopy.addActionListener(e -> panel.copiarSeleccion());
+        JMenuItem itPaste = new JMenuItem("Pegar (Ctrl+V)");
+        itPaste.addActionListener(e -> panel.pegar());
+        mEditar.add(itUndo);
+        mEditar.add(itRedo);
+        mEditar.addSeparator();
+        mEditar.add(itCopy);
+        mEditar.add(itPaste);
+        mb.add(mEditar);
+
         return mb;
     }
 
@@ -98,7 +119,7 @@ public class VentanaDeDibujo extends JFrame {
         tb.setFloatable(false);
         ButtonGroup group = new ButtonGroup();
 
-        // Helper para crear toggle y agrupar
+        // Helper: crear toggle y agrupar
         java.util.function.BiFunction<String, PanelDeDibujo.Herramienta, JToggleButton> mk =
                 (label, tool) -> {
                     JToggleButton b = new JToggleButton(label);
@@ -108,14 +129,16 @@ public class VentanaDeDibujo extends JFrame {
                     return b;
                 };
 
-        // Fila 1: selección + básicas
+        // Fila 1: selección + dibujo libre + básicas
         JToggleButton bSel = mk.apply("Selección", PanelDeDibujo.Herramienta.SELECCION);
         bSel.setSelected(true);
+        mk.apply("Dibujo libre", PanelDeDibujo.Herramienta.DIBUJO_LIBRE);
         mk.apply("Línea", PanelDeDibujo.Herramienta.LINEA);
         mk.apply("Rectángulo", PanelDeDibujo.Herramienta.RECTANGULO);
         mk.apply("Círculo", PanelDeDibujo.Herramienta.CIRCULO);
         mk.apply("Óvalo", PanelDeDibujo.Herramienta.OVALO);
         mk.apply("Triángulo", PanelDeDibujo.Herramienta.TRIANGULO);
+        mk.apply("Corazón", PanelDeDibujo.Herramienta.CORAZON);
         tb.addSeparator();
 
         // Fila 2: poligonales y especiales
@@ -128,28 +151,37 @@ public class VentanaDeDibujo extends JFrame {
         mk.apply("Arco", PanelDeDibujo.Herramienta.ARCO);
         tb.addSeparator();
 
-        // Fila 3: flechas
+        // Fila 3: flechas + cubeta
         mk.apply("Flecha ↑", PanelDeDibujo.Herramienta.FLECHA_ARRIBA);
         mk.apply("Flecha ↓", PanelDeDibujo.Herramienta.FLECHA_ABAJO);
         mk.apply("Flecha ←", PanelDeDibujo.Herramienta.FLECHA_IZQUIERDA);
         mk.apply("Flecha →", PanelDeDibujo.Herramienta.FLECHA_DERECHA);
+        mk.apply("Cubeta", PanelDeDibujo.Herramienta.CUBETA);
         tb.addSeparator();
 
-        // Cubeta y colores
-        mk.apply("Cubeta", PanelDeDibujo.Herramienta.CUBETA);
+        // Colores y grosor
         JButton cLinea = new JButton("Color línea");
         cLinea.addActionListener(e -> {
             Color c = JColorChooser.showDialog(this, "Selecciona color de línea", Color.BLACK);
             if (c != null) panel.setColorLinea(c);
         });
+
         JButton cRelleno = new JButton("Color relleno");
         cRelleno.addActionListener(e -> {
             Color c = JColorChooser.showDialog(this, "Selecciona color de relleno", Color.WHITE);
             if (c != null) panel.setColorRelleno(c);
         });
-        tb.addSeparator();
+
         tb.add(cLinea);
         tb.add(cRelleno);
+        tb.add(new JLabel("  Grosor: "));
+        spinnerGrosor = new JSpinner(new SpinnerNumberModel(2, 1, 50, 1));
+        spinnerGrosor.addChangeListener(e -> {
+            float g = ((Integer) spinnerGrosor.getValue()).floatValue();
+            panel.setGrosorActual(g);
+            panel.ajustarGrosorSeleccionado(g);
+        });
+        tb.add(spinnerGrosor);
 
         return tb;
     }
