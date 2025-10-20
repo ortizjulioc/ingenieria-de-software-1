@@ -27,7 +27,7 @@ public class VentanaDeDibujo extends JFrame {
     private JPanel panelPropiedades;
     private boolean propsVisible = true;
 
-    // Swatches de color
+    // Swatches de color (valores actuales)
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = Color.WHITE;
 
@@ -322,7 +322,7 @@ public class VentanaDeDibujo extends JFrame {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0; c.gridy = 0;
 
-        // Grosor pincel
+        // === Grosor pincel ===
         panelPropiedades.add(new JLabel("Grosor pincel"), c);
         c.gridy++;
         JSpinner spGrosor = new JSpinner(new SpinnerNumberModel(2, 1, 50, 1));
@@ -333,7 +333,7 @@ public class VentanaDeDibujo extends JFrame {
         });
         panelPropiedades.add(spGrosor, c);
 
-        // Tamaño borrador
+        // === Tamaño borrador ===
         c.gridy++;
         panelPropiedades.add(new JLabel("Tamaño borrador"), c);
         c.gridy++;
@@ -341,7 +341,7 @@ public class VentanaDeDibujo extends JFrame {
         spBorr.addChangeListener(e -> panel.setTamBorrador(((Integer) spBorr.getValue()).floatValue()));
         panelPropiedades.add(spBorr, c);
 
-        // Color borrador
+        // === Color borrador ===
         c.gridy++;
         panelPropiedades.add(new JLabel("Color borrador"), c);
         c.gridy++;
@@ -352,7 +352,37 @@ public class VentanaDeDibujo extends JFrame {
         });
         panelPropiedades.add(swBorr, c);
 
-        // Relleno final
+        // === Color de línea (en Propiedades) ===
+        c.gridy++;
+        panelPropiedades.add(new JLabel("Color de línea"), c);
+        c.gridy++;
+        ColorSwatchButton swLineaProp = new ColorSwatchButton(colorLinea);
+        swLineaProp.addActionListener(e -> {
+            Color cPick = JColorChooser.showDialog(this, "Selecciona color de línea", swLineaProp.getColor());
+            if (cPick != null) {
+                colorLinea = cPick;
+                swLineaProp.setColor(cPick);
+                panel.setColorLinea(cPick);
+            }
+        });
+        panelPropiedades.add(swLineaProp, c);
+
+        // === Color de relleno (en Propiedades) ===
+        c.gridy++;
+        panelPropiedades.add(new JLabel("Color de relleno"), c);
+        c.gridy++;
+        ColorSwatchButton swRellenoProp = new ColorSwatchButton(colorRelleno);
+        swRellenoProp.addActionListener(e -> {
+            Color cPick = JColorChooser.showDialog(this, "Selecciona color de relleno", swRellenoProp.getColor());
+            if (cPick != null) {
+                colorRelleno = cPick;
+                swRellenoProp.setColor(cPick);
+                panel.setColorRelleno(cPick);
+            }
+        });
+        panelPropiedades.add(swRellenoProp, c);
+
+        // Relleno final (espaciador)
         c.gridy++; c.weighty = 1.0;
         panelPropiedades.add(Box.createVerticalGlue(), c);
 
