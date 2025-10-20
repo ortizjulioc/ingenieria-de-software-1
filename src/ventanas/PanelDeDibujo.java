@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 /**
  * Panel principal con herramientas completas, Dibujo Libre, Borrador con silueta,
  * Undo/Redo, Copiar/Pegar, y botón Limpiar (expuesto desde la Ventana).
+ * (Parche: la silueta del borrador ahora sigue el cursor mientras se arrastra).
  */
 public class PanelDeDibujo extends JPanel {
 
@@ -125,6 +126,8 @@ public class PanelDeDibujo extends JPanel {
                 }
 
                 if (herramienta == Herramienta.BORRADOR) {
+                    // Actualizamos la silueta desde el primer clic
+                    mousePos = puntoAnterior;
                     Borrador b = new Borrador(puntoAnterior, tamBorrador);
                     b.setColorLinea(colorBorrador); // "pinta" con color de borrador
                     figuraActual = b;
@@ -332,6 +335,8 @@ public class PanelDeDibujo extends JPanel {
                 }
 
                 if (herramienta == Herramienta.BORRADOR && figuraActual instanceof Borrador b) {
+                    // Actualizamos la silueta durante el arrastre
+                    mousePos = p;
                     b.agregarPunto(p);
                     repaint();
                     return;
