@@ -7,14 +7,22 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-
+/**
+ * Ventana principal (V de MVC)
+ * - Usa DibujoController para orquestar acciones
+ * - El estado global vive en ModeloDibujo
+ * - Esta vista solo muestra UI y reenvía eventos al Controller
+ */
 public class VentanaDeDibujo extends JFrame {
 
-    private final PanelDeDibujo panel;
+    private final PanelDeDibujo panel;          // Vista de lienzo (existente)
+    private final ModeloDibujo modelo;          // Modelo global (nuevo)
+    private final DibujoController controller;  // Controlador (nuevo)
+
     private JPanel panelPropiedades;
     private boolean propsVisible = true;
 
-    // Swatches de color (valores actuales)
+    // Swatches (cache local para pintar botones, el estado real está en el Modelo)
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = Color.WHITE;
 
@@ -22,12 +30,16 @@ public class VentanaDeDibujo extends JFrame {
     private final JLabel statusLabel = new JLabel("Listo");
 
     public VentanaDeDibujo() {
-        super("Editor de Dibujo");
+        super("Editor de Dibujo 2D – MVC");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 760);
         setLocationRelativeTo(null);
 
+        // ===== MVC wiring =====
         panel = new PanelDeDibujo();
+        modelo = new ModeloDibujo();
+        controller = new DibujoController(modelo, panel);
+
         getContentPane().add(panel, BorderLayout.CENTER);
 
         setJMenuBar(crearMenu());
@@ -43,6 +55,10 @@ public class VentanaDeDibujo extends JFrame {
         };
         panel.addMouseMotionListener(mouseStatus);
         panel.addMouseListener(mouseStatus);
+
+        // Sincroniza swatches con el modelo
+        colorLinea = modelo.getColorLinea();
+        colorRelleno = modelo.getColorRelleno();
     }
 
     private void updateStatus(Point p) {
@@ -61,7 +77,7 @@ public class VentanaDeDibujo extends JFrame {
         JMenu mArchivo = new JMenu("Archivo");
         JMenuItem itNuevo = new JMenuItem("Nuevo");
         itNuevo.addActionListener(e -> {
-            if (panel.isModificado()) {
+            if (controller.isModificado()) {
                 int r = JOptionPane.showConfirmDialog(this,
                         "¿Deseas guardar los cambios actuales?",
                         "Nuevo dibujo", JOptionPane.YES_NO_CANCEL_OPTION);
@@ -70,16 +86,16 @@ public class VentanaDeDibujo extends JFrame {
                     JFileChooser fc = new JFileChooser();
                     fc.setDialogTitle("Guardar proyecto");
                     if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                        try { panel.guardarProyecto(fc.getSelectedFile()); }
+                        try { controller.guardarProyecto(fc.getSelectedFile()); }
                         catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage()); return; }
                     } else return;
                 }
             }
-            panel.limpiarLienzo();
+            controller.limpiarLienzo();
         });
         JMenuItem itAbrir = new JMenuItem("Abrir...");
         itAbrir.addActionListener(e -> {
-            if (panel.isModificado()) {
+            if (controller.isModificado()) {
                 int r = JOptionPane.showConfirmDialog(this,
                         "Tienes cambios sin guardar. ¿Continuar y descartarlos?",
                         "Abrir proyecto", JOptionPane.YES_NO_OPTION);
@@ -88,7 +104,7 @@ public class VentanaDeDibujo extends JFrame {
             JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Abrir proyecto");
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try { panel.abrirProyecto(fc.getSelectedFile()); }
+                try { controller.abrirProyecto(fc.getSelectedFile()); }
                 catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al abrir: " + ex.getMessage()); }
             }
         });
@@ -97,7 +113,7 @@ public class VentanaDeDibujo extends JFrame {
             JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Guardar proyecto");
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try { panel.guardarProyecto(fc.getSelectedFile()); }
+                try { controller.guardarProyecto(fc.getSelectedFile()); }
                 catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage()); }
             }
         });
@@ -106,7 +122,7 @@ public class VentanaDeDibujo extends JFrame {
             JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Exportar como PNG");
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try { panel.exportarComoPNG(fc.getSelectedFile()); }
+                try { controller.exportarComoPNG(fc.getSelectedFile()); }
                 catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al exportar: " + ex.getMessage()); }
             }
         });
@@ -120,17 +136,17 @@ public class VentanaDeDibujo extends JFrame {
 
         JMenu mEditar = new JMenu("Editar");
         JMenuItem itUndo = new JMenuItem("Deshacer (Ctrl+Z)");
-        itUndo.addActionListener(e -> panel.undo());
+        itUndo.addActionListener(e -> controller.undo());
         JMenuItem itRedo = new JMenuItem("Rehacer (Ctrl+Y)");
-        itRedo.addActionListener(e -> panel.redo());
+        itRedo.addActionListener(e -> controller.redo());
         JMenuItem itCopy = new JMenuItem("Copiar (Ctrl+C)");
-        itCopy.addActionListener(e -> panel.copiarSeleccion());
+        itCopy.addActionListener(e -> controller.copiarSeleccion());
         JMenuItem itPaste = new JMenuItem("Pegar (Ctrl+V)");
-        itPaste.addActionListener(e -> panel.pegar());
+        itPaste.addActionListener(e -> controller.pegar());
         JMenuItem itLimpiar = new JMenuItem("Limpiar todo");
         itLimpiar.addActionListener(e -> {
             int r = JOptionPane.showConfirmDialog(this, "¿Borrar todo el lienzo?", "Limpiar", JOptionPane.YES_NO_OPTION);
-            if (r == JOptionPane.YES_OPTION) panel.limpiarLienzo();
+            if (r == JOptionPane.YES_OPTION) controller.limpiarLienzo();
         });
 
         mEditar.add(itUndo);
@@ -142,7 +158,7 @@ public class VentanaDeDibujo extends JFrame {
         mEditar.add(itLimpiar);
         mb.add(mEditar);
 
-        // ===== AYUDA =====
+        // ===== Ayuda (con diálogo estilizado) – ya lo tenías en la versión anterior =====
         JMenu mAyuda = new JMenu("Ayuda");
         JMenuItem itGuia = new JMenuItem("Guía de uso");
         itGuia.addActionListener(e -> mostrarDialogoAyuda());
@@ -162,9 +178,9 @@ public class VentanaDeDibujo extends JFrame {
         tb.setFloatable(false);
         tb.setRollover(true);
         tb.setBorder(new EmptyBorder(6, 8, 6, 8));
-        tb.setBackground(new Color(245, 247, 250)); // gris muy claro (moderno)
+        tb.setBackground(new Color(245, 247, 250)); // gris muy claro
 
-        // Helper: estilos + feedback hover/activo
+        // Helper de estilo
         java.util.function.Consumer<AbstractButton> stylize = btn -> {
             btn.setFocusPainted(false);
             btn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
@@ -183,28 +199,28 @@ public class VentanaDeDibujo extends JFrame {
             });
         };
 
-        // === Grupo 1: Selección, Dibujo Libre, Borrador ===
         ButtonGroup group = new ButtonGroup();
 
+        // Grupo 1
         JToggleButton btSel = new JToggleButton(new ShapeIcon(IconType.CURSOR));
         btSel.setToolTipText("Selección (V)");
-        btSel.addActionListener(e -> panel.setHerramienta(PanelDeDibujo.Herramienta.SELECCION));
+        btSel.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.SELECCION));
         btSel.setSelected(true);
         stylize.accept(btSel); group.add(btSel); tb.add(btSel);
 
         JToggleButton btLapiz = new JToggleButton(new ShapeIcon(IconType.PENCIL));
         btLapiz.setToolTipText("Dibujo libre (B)");
-        btLapiz.addActionListener(e -> panel.setHerramienta(PanelDeDibujo.Herramienta.DIBUJO_LIBRE));
+        btLapiz.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.DIBUJO_LIBRE));
         stylize.accept(btLapiz); group.add(btLapiz); tb.add(btLapiz);
 
         JToggleButton btBorr = new JToggleButton(new ShapeIcon(IconType.ERASER));
         btBorr.setToolTipText("Borrador (E)");
-        btBorr.addActionListener(e -> panel.setHerramienta(PanelDeDibujo.Herramienta.BORRADOR));
+        btBorr.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.BORRADOR));
         stylize.accept(btBorr); group.add(btBorr); tb.add(btBorr);
 
         tb.addSeparator(new Dimension(12,0));
 
-        // === Grupo 2: Figuras (botón único con desplegable) ===
+        // Grupo 2 – Figuras (menú)
         JButton btFig = new JButton(new ShapeIcon(IconType.SHAPES));
         btFig.setToolTipText("Figuras");
         stylize.accept(btFig);
@@ -215,12 +231,12 @@ public class VentanaDeDibujo extends JFrame {
 
         tb.addSeparator(new Dimension(12,0));
 
-        // === Grupo 3: Colores (línea, relleno, cubeta) ===
+        // Grupo 3 – Colores (swatches)
         ColorSwatchButton swLinea = new ColorSwatchButton(colorLinea);
         swLinea.setToolTipText("Color de línea");
         swLinea.addActionListener(e -> {
             Color c = JColorChooser.showDialog(this, "Selecciona color de línea", colorLinea);
-            if (c != null) { colorLinea = c; panel.setColorLinea(c); swLinea.setColor(c); }
+            if (c != null) { colorLinea = c; controller.setColorLinea(c); swLinea.setColor(c); }
         });
         tb.add(swLinea);
 
@@ -228,18 +244,18 @@ public class VentanaDeDibujo extends JFrame {
         swRelleno.setToolTipText("Color de relleno");
         swRelleno.addActionListener(e -> {
             Color c = JColorChooser.showDialog(this, "Selecciona color de relleno", colorRelleno);
-            if (c != null) { colorRelleno = c; panel.setColorRelleno(c); swRelleno.setColor(c); }
+            if (c != null) { colorRelleno = c; controller.setColorRelleno(c); swRelleno.setColor(c); }
         });
         tb.add(swRelleno);
 
         JToggleButton btCubeta = new JToggleButton(new ShapeIcon(IconType.BUCKET));
         btCubeta.setToolTipText("Cubeta de pintura");
         stylize.accept(btCubeta); group.add(btCubeta); tb.add(btCubeta);
-        btCubeta.addActionListener(e -> panel.setHerramienta(PanelDeDibujo.Herramienta.CUBETA));
+        btCubeta.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.CUBETA));
 
         tb.addSeparator(new Dimension(12,0));
 
-        // === Grupo 4: Propiedades (toggle panel lateral) ===
+        // Grupo 4 – Propiedades (toggle panel)
         JButton toggleProps = new JButton(new ShapeIcon(IconType.PANELS));
         toggleProps.setToolTipText("Mostrar/Ocultar propiedades");
         stylize.accept(toggleProps);
@@ -256,38 +272,38 @@ public class VentanaDeDibujo extends JFrame {
         repaint();
     }
 
-    // Menú desplegable de figuras con subcategorías + iconos
+    // Menú de figuras (desplegable)
     private JPopupMenu crearMenuFiguras(ButtonGroup group, JToggleButton... toUnselect) {
         JPopupMenu popup = new JPopupMenu();
 
         JMenu basicas = new JMenu("Formas básicas");
         basicas.setIcon(new ShapeIcon(IconType.CAT_BASIC));
-        basicas.add(itemFigura("Línea", PanelDeDibujo.Herramienta.LINEA, IconType.LINE, group, toUnselect));
-        basicas.add(itemFigura("Rectángulo", PanelDeDibujo.Herramienta.RECTANGULO, IconType.RECT, group, toUnselect));
-        basicas.add(itemFigura("Círculo", PanelDeDibujo.Herramienta.CIRCULO, IconType.CIRC, group, toUnselect));
-        basicas.add(itemFigura("Óvalo", PanelDeDibujo.Herramienta.OVALO, IconType.OVAL, group, toUnselect));
-        basicas.add(itemFigura("Triángulo", PanelDeDibujo.Herramienta.TRIANGULO, IconType.TRI, group, toUnselect));
+        basicas.add(itemFigura("Línea", ModeloDibujo.Herramienta.LINEA, IconType.LINE, toUnselect));
+        basicas.add(itemFigura("Rectángulo", ModeloDibujo.Herramienta.RECTANGULO, IconType.RECT, toUnselect));
+        basicas.add(itemFigura("Círculo", ModeloDibujo.Herramienta.CIRCULO, IconType.CIRC, toUnselect));
+        basicas.add(itemFigura("Óvalo", ModeloDibujo.Herramienta.OVALO, IconType.OVAL, toUnselect));
+        basicas.add(itemFigura("Triángulo", ModeloDibujo.Herramienta.TRIANGULO, IconType.TRI, toUnselect));
 
         JMenu complejas = new JMenu("Formas complejas");
         complejas.setIcon(new ShapeIcon(IconType.CAT_COMPLEX));
-        complejas.add(itemFigura("Corazón", PanelDeDibujo.Herramienta.CORAZON, IconType.HEART, group, toUnselect));
-        complejas.add(itemFigura("Rombo", PanelDeDibujo.Herramienta.ROMBO, IconType.RHOMB, group, toUnselect));
-        complejas.add(itemFigura("Trapecio", PanelDeDibujo.Herramienta.TRAPECIO, IconType.TRAP, group, toUnselect));
-        complejas.add(itemFigura("Pentágono", PanelDeDibujo.Herramienta.PENTAGONO, IconType.PENTA, group, toUnselect));
-        complejas.add(itemFigura("Hexágono", PanelDeDibujo.Herramienta.HEXAGONO, IconType.HEXA, group, toUnselect));
-        complejas.add(itemFigura("Estrella", PanelDeDibujo.Herramienta.ESTRELLA, IconType.STAR, group, toUnselect));
+        complejas.add(itemFigura("Corazón", ModeloDibujo.Herramienta.CORAZON, IconType.HEART, toUnselect));
+        complejas.add(itemFigura("Rombo", ModeloDibujo.Herramienta.ROMBO, IconType.RHOMB, toUnselect));
+        complejas.add(itemFigura("Trapecio", ModeloDibujo.Herramienta.TRAPECIO, IconType.TRAP, toUnselect));
+        complejas.add(itemFigura("Pentágono", ModeloDibujo.Herramienta.PENTAGONO, IconType.PENTA, toUnselect));
+        complejas.add(itemFigura("Hexágono", ModeloDibujo.Herramienta.HEXAGONO, IconType.HEXA, toUnselect));
+        complejas.add(itemFigura("Estrella", ModeloDibujo.Herramienta.ESTRELLA, IconType.STAR, toUnselect));
 
         JMenu flechas = new JMenu("Flechas");
         flechas.setIcon(new ShapeIcon(IconType.CAT_ARROWS));
-        flechas.add(itemFigura("Flecha 1 (↑)", PanelDeDibujo.Herramienta.FLECHA_ARRIBA, IconType.ARROW_UP, group, toUnselect));
-        flechas.add(itemFigura("Flecha 2 (↓)", PanelDeDibujo.Herramienta.FLECHA_ABAJO, IconType.ARROW_DOWN, group, toUnselect));
-        flechas.add(itemFigura("Flecha 3 (←)", PanelDeDibujo.Herramienta.FLECHA_IZQUIERDA, IconType.ARROW_LEFT, group, toUnselect));
-        flechas.add(itemFigura("Flecha 4 (→)", PanelDeDibujo.Herramienta.FLECHA_DERECHA, IconType.ARROW_RIGHT, group, toUnselect));
+        flechas.add(itemFigura("Flecha 1 (↑)", ModeloDibujo.Herramienta.FLECHA_ARRIBA, IconType.ARROW_UP, toUnselect));
+        flechas.add(itemFigura("Flecha 2 (↓)", ModeloDibujo.Herramienta.FLECHA_ABAJO, IconType.ARROW_DOWN, toUnselect));
+        flechas.add(itemFigura("Flecha 3 (←)", ModeloDibujo.Herramienta.FLECHA_IZQUIERDA, IconType.ARROW_LEFT, toUnselect));
+        flechas.add(itemFigura("Flecha 4 (→)", ModeloDibujo.Herramienta.FLECHA_DERECHA, IconType.ARROW_RIGHT, toUnselect));
 
         JMenu otros = new JMenu("Otros");
         otros.setIcon(new ShapeIcon(IconType.CAT_MISC));
-        otros.add(itemFigura("Nube", PanelDeDibujo.Herramienta.NUBE, IconType.CLOUD, group, toUnselect));
-        otros.add(itemFigura("Arco", PanelDeDibujo.Herramienta.ARCO, IconType.ARC, group, toUnselect));
+        otros.add(itemFigura("Nube", ModeloDibujo.Herramienta.NUBE, IconType.CLOUD, toUnselect));
+        otros.add(itemFigura("Arco", ModeloDibujo.Herramienta.ARCO, IconType.ARC, toUnselect));
 
         popup.add(basicas);
         popup.add(complejas);
@@ -296,12 +312,10 @@ public class VentanaDeDibujo extends JFrame {
         return popup;
     }
 
-    private JMenuItem itemFigura(String name, PanelDeDibujo.Herramienta tool, IconType icon,
-                                 ButtonGroup group, JToggleButton... toUnselect) {
+    private JMenuItem itemFigura(String name, ModeloDibujo.Herramienta tool, IconType icon, JToggleButton... toUnselect) {
         JMenuItem it = new JMenuItem(name, new ShapeIcon(icon));
         it.addActionListener(e -> {
-            panel.setHerramienta(tool);
-            // deselecciona toggles del grupo principal (para evitar apariencia de otra activa)
+            controller.setHerramienta(tool);
             for (JToggleButton b : toUnselect) b.setSelected(false);
         });
         return it;
@@ -320,37 +334,36 @@ public class VentanaDeDibujo extends JFrame {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0; c.gridy = 0;
 
-        // === Grosor pincel ===
+        // Grosor pincel
         panelPropiedades.add(new JLabel("Grosor pincel"), c);
         c.gridy++;
         JSpinner spGrosor = new JSpinner(new SpinnerNumberModel(2, 1, 50, 1));
         spGrosor.addChangeListener(e -> {
             float g = ((Integer) spGrosor.getValue()).floatValue();
-            panel.setGrosorActual(g);
-            panel.ajustarGrosorSeleccionado(g);
+            controller.setGrosorActual(g);
         });
         panelPropiedades.add(spGrosor, c);
 
-        // === Tamaño borrador ===
+        // Tamaño borrador
         c.gridy++;
         panelPropiedades.add(new JLabel("Tamaño borrador"), c);
         c.gridy++;
         JSpinner spBorr = new JSpinner(new SpinnerNumberModel(12, 1, 100, 1));
-        spBorr.addChangeListener(e -> panel.setTamBorrador(((Integer) spBorr.getValue()).floatValue()));
+        spBorr.addChangeListener(e -> controller.setTamBorrador(((Integer) spBorr.getValue()).floatValue()));
         panelPropiedades.add(spBorr, c);
 
-        // === Color borrador ===
+        // Color borrador
         c.gridy++;
         panelPropiedades.add(new JLabel("Color borrador"), c);
         c.gridy++;
         ColorSwatchButton swBorr = new ColorSwatchButton(Color.WHITE);
         swBorr.addActionListener(e -> {
             Color cPick = JColorChooser.showDialog(this, "Selecciona color de borrador", swBorr.getColor());
-            if (cPick != null) { swBorr.setColor(cPick); panel.setColorBorrador(cPick); }
+            if (cPick != null) { swBorr.setColor(cPick); controller.setColorBorrador(cPick); }
         });
         panelPropiedades.add(swBorr, c);
 
-        // === Color de línea (en Propiedades) ===
+        // Color de línea
         c.gridy++;
         panelPropiedades.add(new JLabel("Color de línea"), c);
         c.gridy++;
@@ -360,12 +373,12 @@ public class VentanaDeDibujo extends JFrame {
             if (cPick != null) {
                 colorLinea = cPick;
                 swLineaProp.setColor(cPick);
-                panel.setColorLinea(cPick);
+                controller.setColorLinea(cPick);
             }
         });
         panelPropiedades.add(swLineaProp, c);
 
-        // === Color de relleno (en Propiedades) ===
+        // Color de relleno
         c.gridy++;
         panelPropiedades.add(new JLabel("Color de relleno"), c);
         c.gridy++;
@@ -375,12 +388,12 @@ public class VentanaDeDibujo extends JFrame {
             if (cPick != null) {
                 colorRelleno = cPick;
                 swRellenoProp.setColor(cPick);
-                panel.setColorRelleno(cPick);
+                controller.setColorRelleno(cPick);
             }
         });
         panelPropiedades.add(swRellenoProp, c);
 
-        // Relleno final (espaciador)
+        // Spacer
         c.gridy++; c.weighty = 1.0;
         panelPropiedades.add(Box.createVerticalGlue(), c);
 
@@ -397,13 +410,10 @@ public class VentanaDeDibujo extends JFrame {
         return status;
     }
 
-    // ======= Iconos vectoriales simples (pintados con Java2D) =======
-    // Se prefiere consistencia visual sobre exactitud geométrica.
+    // ======= Iconos vectoriales internos (ShapeIcon) =======
     enum IconType {
         CURSOR, PENCIL, ERASER, SHAPES, BUCKET, PANELS,
-        // Categorías
         CAT_BASIC, CAT_COMPLEX, CAT_ARROWS, CAT_MISC,
-        // Figuras
         LINE, RECT, CIRC, OVAL, TRI,
         HEART, RHOMB, TRAP, PENTA, HEXA, STAR,
         ARROW_UP, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT,
@@ -424,56 +434,24 @@ public class VentanaDeDibujo extends JFrame {
             g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
             switch (type) {
-                // ===== Herramientas =====
-                case CURSOR -> {
-                    Polygon p = new Polygon(new int[]{2, 2, 12}, new int[]{2, 14, 8}, 3);
-                    g2.fillPolygon(p);
-                }
-                case PENCIL -> {
-                    g2.drawLine(2, h-4, w-6, 4);
-                    g2.fillRect(w-8, 2, 4, 4);
-                    g2.fillRect(2, h-6, 4, 4);
-                }
-                case ERASER -> {
-                    g2.drawRoundRect(2, 4, w-6, h-8, 4, 4);
-                    g2.drawLine(5, h-4, w-6, h-4);
-                }
-                case SHAPES -> {
-                    g2.drawRect(1, 1, 9, 9);
-                    g2.drawOval(7, 7, 10, 10);
-                }
-                case BUCKET -> {
-                    g2.drawRect(4, 2, 10, 8);
-                    g2.drawLine(4, 6, 14, 6);
-                    g2.fillOval(2, 12, 6, 4);
-                }
-                case PANELS -> {
-                    g2.drawRect(2, 2, w-4, h-4);
-                    g2.drawLine(2, 8, w-2, 8);
-                    g2.drawLine(w/2, 8, w/2, h-2);
-                }
+                case CURSOR -> { Polygon p = new Polygon(new int[]{2, 2, 12}, new int[]{2, 14, 8}, 3); g2.fillPolygon(p); }
+                case PENCIL -> { g2.drawLine(2, h-4, w-6, 4); g2.fillRect(w-8, 2, 4, 4); g2.fillRect(2, h-6, 4, 4); }
+                case ERASER -> { g2.drawRoundRect(2, 4, w-6, h-8, 4, 4); g2.drawLine(5, h-4, w-6, h-4); }
+                case SHAPES -> { g2.drawRect(1, 1, 9, 9); g2.drawOval(7, 7, 10, 10); }
+                case BUCKET -> { g2.drawRect(4, 2, 10, 8); g2.drawLine(4, 6, 14, 6); g2.fillOval(2, 12, 6, 4); }
+                case PANELS -> { g2.drawRect(2, 2, w-4, h-4); g2.drawLine(2, 8, w-2, 8); g2.drawLine(w/2, 8, w/2, h-2); }
 
-                // ===== Categorías =====
                 case CAT_BASIC -> { g2.drawRect(2, 2, 6, 6); g2.drawOval(10, 10, 6, 6); }
-                case CAT_COMPLEX -> {
-                    g2.drawOval(2, 2, 6, 6);
-                    drawStar(g2, 13, 6, 6, 3, 5); // pequeño icono estrella
-                }
+                case CAT_COMPLEX -> { g2.drawOval(2, 2, 6, 6); drawStar(g2, 13, 6, 6, 3, 5); }
                 case CAT_ARROWS -> { g2.drawLine(3, h/2, w-3, h/2); g2.drawLine(w-6, h/2-3, w-3, h/2); g2.drawLine(w-6, h/2+3, w-3, h/2); }
                 case CAT_MISC -> { g2.drawOval(3, 6, 6, 5); g2.drawArc(11, 4, 6, 10, 200, 140); }
 
-                // ===== Figuras =====
                 case LINE -> { g2.drawLine(2, h-4, w-2, 4); }
                 case RECT -> { g2.drawRect(3, 3, w-6, h-6); }
                 case CIRC -> { g2.drawOval(3, 3, w-6, h-6); }
                 case OVAL -> { g2.drawOval(2, 5, w-4, h-10); }
                 case TRI -> { Polygon tri = new Polygon(new int[]{w/2, 3, w-3}, new int[]{3, h-3, h-3}, 3); g2.drawPolygon(tri); }
-                case HEART -> {
-                    g2.drawArc(3, 3, 6, 6, 0, 180);
-                    g2.drawArc(9, 3, 6, 6, 0, 180);
-                    g2.drawLine(3, 6, w/2, h-3);
-                    g2.drawLine(w-3, 6, w/2, h-3);
-                }
+                case HEART -> { g2.drawArc(3, 3, 6, 6, 0, 180); g2.drawArc(9, 3, 6, 6, 0, 180); g2.drawLine(3, 6, w/2, h-3); g2.drawLine(w-3, 6, w/2, h-3); }
                 case RHOMB -> { Polygon rh = new Polygon(new int[]{w/2, w-4, w/2, 4}, new int[]{3, h/2, h-3, h/2}, 4); g2.drawPolygon(rh); }
                 case TRAP -> { Polygon trp = new Polygon(new int[]{4, w-4, w-6, 6}, new int[]{h-4, h-4, 4, 4}, 4); g2.drawPolygon(trp); }
                 case PENTA -> {
@@ -501,7 +479,6 @@ public class VentanaDeDibujo extends JFrame {
         @Override public int getIconWidth() { return w; }
         @Override public int getIconHeight() { return h; }
 
-        /** Dibuja una estrella simple (polígono) */
         private void drawStar(Graphics2D g2, int cx, int cy, int rOuter, int rInner, int points) {
             double angle = Math.PI / points;
             Polygon star = new Polygon();
@@ -516,7 +493,7 @@ public class VentanaDeDibujo extends JFrame {
         }
     }
 
-    // Botón swatch de color (muestra y clic para Color Picker)
+    // ==== Swatch de color ====
     static class ColorSwatchButton extends JButton {
         private Color color;
         ColorSwatchButton(Color c) {
@@ -542,97 +519,54 @@ public class VentanaDeDibujo extends JFrame {
         }
     }
 
-    // ======== Diálogos de Ayuda ========
+    // ==== Diálogos de ayuda (ya existentes en tu versión previa) ====
     private void mostrarDialogoAyuda() {
         JDialog dlg = new JDialog(this, "Guía de uso", true);
         dlg.setSize(720, 600);
         dlg.setLocationRelativeTo(this);
-
-        String accent = "#4F46E5"; // índigo
+        String accent = "#4F46E5";
         String text = """
-        <html>
-        <head>
-        <style>
-          body { font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#111827; margin:0; }
-          .wrap { padding:20px 22px; }
-          .hero { background:#F5F7FA; border-bottom:1px solid #E5E7EB; padding:18px 22px; }
-          .title { margin:0; font-size:20px; color:#111827; }
-          .subtitle { margin:6px 0 0 0; color:#6B7280; font-size:13px; }
-          h3 { color:#111827; margin:22px 0 8px; font-size:15px; }
-          .card { border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px; background:#FFFFFF; margin:10px 0; }
-          .kbd { background:#F3F4F6; border:1px solid #E5E7EB; padding:2px 6px; border-radius:6px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
-          ul { margin:6px 0 10px 16px; }
-          li { margin:6px 0; }
-          .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; background:%s; color:#fff; }
-          .hint { color:#6B7280; font-size:12px; }
-          a { color:%s; text-decoration:none; }
-        </style>
-        </head>
-        <body>
-          <div class="hero">
-            <div class="badge">Ayuda</div>
-            <h1 class="title">Cómo usar el Editor de Dibujo</h1>
-            <p class="subtitle">Guía rápida de herramientas, atajos y flujo de trabajo.</p>
+        <html><head><style>
+        body{font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111827;margin:0}
+        .wrap{padding:20px 22px}.hero{background:#F5F7FA;border-bottom:1px solid #E5E7EB;padding:18px 22px}
+        .title{margin:0;font-size:20px;color:#111827}.subtitle{margin:6px 0 0 0;color:#6B7280;font-size:13px}
+        h3{color:#111827;margin:22px 0 8px;font-size:15px}.card{border:1px solid #E5E7EB;border-radius:10px;padding:14px 16px;background:#fff;margin:10px 0}
+        .kbd{background:#F3F4F6;border:1px solid #E5E7EB;padding:2px 6px;border-radius:6px;font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
+        ul{margin:6px 0 10px 16px}li{margin:6px 0}.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:%s;color:#fff}
+        .hint{color:#6B7280;font-size:12px}a{color:%s;text-decoration:none}
+        </style></head><body>
+        <div class="hero"><div class="badge">Ayuda</div><h1 class="title">Cómo usar el Editor de Dibujo</h1>
+        <p class="subtitle">Guía rápida de herramientas, atajos y flujo de trabajo.</p></div>
+        <div class="wrap">
+          <div class="card"><h3>1) Selección y edición</h3>
+            <ul><li><b>Selección:</b> elige la herramienta Selección.</li>
+            <li><b>Arrastrar:</b> arrastra la figura seleccionada.</li>
+            <li><b>Redimensionar:</b> usa los handles del bounding box.</li>
+            <li><b>Eliminar:</b> tecla <span class="kbd">Supr</span>.</li></ul>
           </div>
-          <div class="wrap">
-            <div class="card">
-              <h3>1) Selección y edición</h3>
-              <ul>
-                <li><b>Selección:</b> elige la herramienta <i>Selección</i> y haz clic sobre una figura.</li>
-                <li><b>Arrastrar:</b> con la figura seleccionada, arrástrala para moverla.</li>
-                <li><b>Redimensionar:</b> usa los <i>handles</i> del <i>bounding box</i>. Las figuras rellenables mantienen proporción.</li>
-                <li><b>Eliminar:</b> tecla <span class="kbd">Supr</span>.</li>
-              </ul>
-            </div>
-
-            <div class="card">
-              <h3>2) Dibujo y borrado</h3>
-              <ul>
-                <li><b>Dibujo libre:</b> herramienta <i>Lápiz</i>, ajusta el <b>grosor</b> en Propiedades.</li>
-                <li><b>Borrador:</b> muestra una silueta que indica el área a borrar. Ajusta <b>tamaño</b> y <b>color</b> en Propiedades.</li>
-              </ul>
-              <p class="hint">Tip: puedes cambiar rápidamente el grosor con <span class="kbd">+</span> y <span class="kbd">-</span>.</p>
-            </div>
-
-            <div class="card">
-              <h3>3) Figuras y colores</h3>
-              <ul>
-                <li><b>Figuras:</b> botón <i>Figuras</i> (menú por categorías: básicas, complejas, flechas y otros).</li>
-                <li><b>Colores:</b> usa los <i>swatches</i> de línea y relleno (arriba o en Propiedades).</li>
-                <li><b>Cubeta:</b> rellena figuras <i>rellenables</i> con el color actual de relleno.</li>
-              </ul>
-            </div>
-
-            <div class="card">
-              <h3>4) Archivo y edición</h3>
-              <ul>
-                <li><b>Nuevo/Abrir/Guardar/Exportar PNG</b> desde el menú <i>Archivo</i>.</li>
-                <li><b>Deshacer/Rehacer:</b> <span class="kbd">Ctrl</span>+<span class="kbd">Z</span> / <span class="kbd">Ctrl</span>+<span class="kbd">Y</span>.</li>
-                <li><b>Copiar/Pegar:</b> <span class="kbd">Ctrl</span>+<span class="kbd">C</span> / <span class="kbd">Ctrl</span>+<span class="kbd">V</span>.</li>
-                <li><b>Limpiar lienzo:</b> en el menú <i>Editar</i>.</li>
-              </ul>
-            </div>
-
-            <div class="card">
-              <h3>5) Barra de estado</h3>
-              <ul>
-                <li>Muestra coordenadas del cursor y tamaño del lienzo.</li>
-              </ul>
-            </div>
-
+          <div class="card"><h3>2) Dibujo y borrado</h3>
+            <ul><li><b>Dibujo libre:</b> ajusta el <b>grosor</b> en Propiedades.</li>
+            <li><b>Borrador:</b> ajusta <b>tamaño</b> y <b>color</b> en Propiedades.</li></ul>
           </div>
-        </body>
-        </html>
+          <div class="card"><h3>3) Figuras y colores</h3>
+            <ul><li><b>Figuras:</b> botón Figuras (categorías).</li>
+            <li><b>Colores:</b> swatches de línea y relleno.</li>
+            <li><b>Cubeta:</b> rellena figuras rellenables.</li></ul>
+          </div>
+          <div class="card"><h3>4) Archivo y edición</h3>
+            <ul><li><b>Nuevo/Abrir/Guardar/Exportar PNG</b> desde Archivo.</li>
+            <li><b>Deshacer/Rehacer:</b> Ctrl+Z / Ctrl+Y.</li>
+            <li><b>Copiar/Pegar:</b> Ctrl+C / Ctrl+V.</li>
+            <li><b>Limpiar lienzo:</b> en Editar.</li></ul>
+          </div>
+        </div></body></html>
         """.formatted(accent, accent);
-
         JEditorPane html = new JEditorPane("text/html", text);
         html.setEditable(false);
         html.setBorder(null);
-
         JScrollPane scroll = new JScrollPane(html);
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
-
         dlg.setContentPane(scroll);
         dlg.setVisible(true);
     }
@@ -641,50 +575,30 @@ public class VentanaDeDibujo extends JFrame {
         JDialog dlg = new JDialog(this, "Acerca de", true);
         dlg.setSize(520, 420);
         dlg.setLocationRelativeTo(this);
-
         String accent = "#4F46E5";
         String text = """
-        <html>
-        <head>
-        <style>
-          body { font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:#111827; margin:0; }
-          .wrap { padding:20px 22px; }
-          .hero { background:#F5F7FA; border-bottom:1px solid #E5E7EB; padding:18px 22px; }
-          .title { margin:0; font-size:20px; color:#111827; }
-          .subtitle { margin:6px 0 0 0; color:#6B7280; font-size:13px; }
-          .card { border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px; background:#FFFFFF; margin:14px 0; }
-          .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; background:%s; color:#fff; }
-          .hint { color:#6B7280; font-size:12px; }
-        </style>
-        </head>
-        <body>
-          <div class="hero">
-            <div class="badge">Acerca de</div>
-            <h1 class="title">Editor de Dibujo 2D</h1>
-            <p class="subtitle">Proyecto académico — Ingeniería de Software I</p>
-          </div>
-          <div class="wrap">
-            <div class="card">
-              <p>Este editor permite crear y manipular figuras vectoriales básicas, con herramientas de selección, dibujo libre, borrado, colores, relleno, copiar/pegar y deshacer/rehacer.</p>
-              <p class="hint">UI rediseñada: barra compacta, menú de figuras por categorías, panel de propiedades y barra de estado.</p>
-            </div>
-            <div class="card">
-              <p><b>Créditos:</b> Equipo de desarrollo del curso.</p>
-              <p><b>Versión:</b> 1.0</p>
-            </div>
-          </div>
-        </body>
-        </html>
+        <html><head><style>
+        body{font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111827;margin:0}
+        .wrap{padding:20px 22px}.hero{background:#F5F7FA;border-bottom:1px solid #E5E7EB;padding:18px 22px}
+        .title{margin:0;font-size:20px;color:#111827}.subtitle{margin:6px 0 0 0;color:#6B7280;font-size:13px}
+        .card{border:1px solid #E5E7EB;border-radius:10px;padding:14px 16px;background:#fff;margin:14px 0}
+        .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:%s;color:#fff}
+        .hint{color:#6B7280;font-size:12px}
+        </style></head><body>
+        <div class="hero"><div class="badge">Acerca de</div><h1 class="title">Editor de Dibujo 2D</h1>
+        <p class="subtitle">Proyecto académico — Ingeniería de Software I</p></div>
+        <div class="wrap">
+          <div class="card"><p>Editor para crear y manipular figuras vectoriales con selección, dibujo libre, borrado, colores, relleno, copiar/pegar y deshacer/rehacer.</p>
+          <p class="hint">UI con barra compacta, menú de figuras, panel de propiedades y barra de estado.</p></div>
+          <div class="card"><p><b>Créditos:</b> Equipo del curso</p><p><b>Versión:</b> 1.0</p></div>
+        </div></body></html>
         """.formatted(accent);
-
         JEditorPane html = new JEditorPane("text/html", text);
         html.setEditable(false);
         html.setBorder(null);
-
         JScrollPane scroll = new JScrollPane(html);
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
-
         dlg.setContentPane(scroll);
         dlg.setVisible(true);
     }
