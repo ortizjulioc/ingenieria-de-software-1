@@ -3,7 +3,7 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Path2D;
 
-/** Triángulo isósceles rellenable dentro del bounds. */
+
 public class Triangulo extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 

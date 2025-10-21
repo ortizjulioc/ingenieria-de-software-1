@@ -3,10 +3,7 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Arc2D;
 
-/**
- * Arco horizontal: media circunferencia con la panza hacia arriba.
- * No rellenable — se dibuja únicamente el contorno del arco.
- */
+
 public class Arco extends Figura {
     private static final long serialVersionUID = 1L;
 
@@ -17,14 +14,14 @@ public class Arco extends Figura {
         setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-    /** Construye el arco (mitad superior del círculo, panza hacia arriba). */
+ 
     private Shape buildShape() {
         int x = bounds.x;
         int y = bounds.y;
         int w = bounds.width;
         int h = bounds.height;
 
-        // Arco abierto, 0° → derecha, 180° → izquierda (antihorario por arriba)
+        
         return new Arc2D.Double(x, y, w, h, 0, 180, Arc2D.OPEN);
     }
 

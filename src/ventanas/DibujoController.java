@@ -3,11 +3,7 @@ package ventanas;
 import java.awt.Color;
 import java.io.File;
 
-/**
- * Controlador (C de MVC)
- * Orquesta las acciones entre la Vista (PanelDeDibujo) y el Modelo (ModeloDibujo).
- * Mantiene toda la API que antes se llamaba directo sobre PanelDeDibujo, para no romper tu código.
- */
+
 public class DibujoController {
 
     private final ModeloDibujo modelo;
@@ -17,9 +13,9 @@ public class DibujoController {
         this.modelo = modelo;
         this.panel = panel;
 
-        // Sincroniza estado inicial del panel con el modelo actual
+       
         syncPanelConModelo();
-        // Opcional: podrías registrar listeners del modelo para reflejar cambios automáticos en el panel
+        
         modelo.addPropertyChangeListener(evt -> {
             switch (evt.getPropertyName()) {
                 case "herramienta"    -> panel.setHerramienta(mapHerramienta((ModeloDibujo.Herramienta) evt.getNewValue()));
@@ -46,7 +42,7 @@ public class DibujoController {
         panel.setColorBorrador(modelo.getColorBorrador());
     }
 
-    // ====== Mutadores que la Vista (VentanaDeDibujo) llamará ======
+    
     public void setHerramienta(ModeloDibujo.Herramienta h)       { modelo.setHerramienta(h); }
     public void setColorLinea(Color c)                           { modelo.setColorLinea(c); }
     public void setColorRelleno(Color c)                         { modelo.setColorRelleno(c); }
@@ -54,7 +50,7 @@ public class DibujoController {
     public void setTamBorrador(float t)                          { modelo.setTamBorrador(t); }
     public void setColorBorrador(Color c)                        { modelo.setColorBorrador(c); }
 
-    // ====== Acciones sobre el lienzo (delegadas al Panel) ======
+   
     public void limpiarLienzo()                                  { panel.limpiarLienzo(); modelo.setModificado(false); }
     public void undo()                                           { panel.undo(); }
     public void redo()                                           { panel.redo(); }
@@ -66,7 +62,7 @@ public class DibujoController {
     public void abrirProyecto(File f) throws Exception           { panel.abrirProyecto(f);  modelo.setModificado(false); }
     public void exportarComoPNG(File f) throws Exception         { panel.exportarComoPNG(f); }
 
-    // ====== Mapeo de herramientas (Modelo -> Panel) ======
+   
     private PanelDeDibujo.Herramienta mapHerramienta(ModeloDibujo.Herramienta h) {
         return switch (h) {
             case SELECCION        -> PanelDeDibujo.Herramienta.SELECCION;

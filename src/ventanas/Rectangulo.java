@@ -47,7 +47,7 @@ public class Rectangulo extends Figura implements FiguraRellenable {
         }
     }
 
-    /** Llamar cuando se inicia un redimensionado proporcional */
+ 
     public void iniciarProporcional() {
         mantenerProporcion = true;
         aspectRatioInicial = (bounds.height == 0) ? 1.0 :

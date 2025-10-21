@@ -3,7 +3,7 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
-/** Óvalo rellenable (usa bounds y respeta proporciones si así lo decides desde el panel). */
+
 public class Ovalo extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 

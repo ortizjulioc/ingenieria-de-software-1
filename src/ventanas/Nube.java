@@ -4,10 +4,7 @@ import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 
-/**
- * Nube rellenable basada en la composición de óvalos del diseño proporcionado,
- * integrada al framework del proyecto (usa bounds, es FiguraRellenable).
- */
+
 public class Nube extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 
@@ -18,12 +15,12 @@ public class Nube extends Figura implements FiguraRellenable {
         setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-    /** Construye la forma de nube usando la misma "receta" de óvalos que el snippet del usuario, adaptada a bounds. */
+   
     private Shape buildShape() {
         double x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
         Area nube = new Area();
 
-        // Mantiene las proporciones del snippet del usuario
+       
         // Círculo izquierdo
         nube.add(new Area(new Ellipse2D.Double(x + w * 0.05, y + h * 0.40, w * 0.30, h * 0.30)));
 
@@ -53,11 +50,11 @@ public class Nube extends Figura implements FiguraRellenable {
 
         Shape s = buildShape();
 
-        // Relleno
+      
         g2.setColor(getColorRelleno());
         g2.fill(s);
 
-        // Contorno
+        
         g2.setColor(getColorLinea());
         g2.setStroke(new BasicStroke(2f));
         g2.draw(s);

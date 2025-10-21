@@ -7,26 +7,21 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-/**
- * Ventana principal (V de MVC)
- * - Usa DibujoController para orquestar acciones
- * - El estado global vive en ModeloDibujo
- * - Esta vista solo muestra UI y reenvía eventos al Controller
- */
+
 public class VentanaDeDibujo extends JFrame {
 
-    private final PanelDeDibujo panel;          // Vista de lienzo (existente)
-    private final ModeloDibujo modelo;          // Modelo global (nuevo)
-    private final DibujoController controller;  // Controlador (nuevo)
+    private final PanelDeDibujo panel;          // Vista de lienzo 
+    private final ModeloDibujo modelo;          // Modelo global 
+    private final DibujoController controller;  // Controlador 
 
     private JPanel panelPropiedades;
     private boolean propsVisible = true;
 
-    // Swatches (cache local para pintar botones, el estado real está en el Modelo)
+   
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = Color.WHITE;
 
-    // Barra de estado
+    
     private final JLabel statusLabel = new JLabel("Listo");
 
     public VentanaDeDibujo() {
@@ -47,7 +42,7 @@ public class VentanaDeDibujo extends JFrame {
         getContentPane().add(crearPanelPropiedades(), BorderLayout.EAST);
         getContentPane().add(crearStatusBar(), BorderLayout.SOUTH);
 
-        // Actualiza barra de estado con coordenadas del cursor
+        
         MouseAdapter mouseStatus = new MouseAdapter() {
             @Override public void mouseMoved(MouseEvent e) { updateStatus(e.getPoint()); }
             @Override public void mouseDragged(MouseEvent e) { updateStatus(e.getPoint()); }
@@ -56,7 +51,7 @@ public class VentanaDeDibujo extends JFrame {
         panel.addMouseMotionListener(mouseStatus);
         panel.addMouseListener(mouseStatus);
 
-        // Sincroniza swatches con el modelo
+        
         colorLinea = modelo.getColorLinea();
         colorRelleno = modelo.getColorRelleno();
     }
@@ -158,7 +153,7 @@ public class VentanaDeDibujo extends JFrame {
         mEditar.add(itLimpiar);
         mb.add(mEditar);
 
-        // ===== Ayuda (con diálogo estilizado) – ya lo tenías en la versión anterior =====
+        
         JMenu mAyuda = new JMenu("Ayuda");
         JMenuItem itGuia = new JMenuItem("Guía de uso");
         itGuia.addActionListener(e -> mostrarDialogoAyuda());
@@ -172,7 +167,7 @@ public class VentanaDeDibujo extends JFrame {
         return mb;
     }
 
-    // ===== Toolbar rediseñada =====
+ 
     private JToolBar crearToolbar() {
         JToolBar tb = new JToolBar();
         tb.setFloatable(false);

@@ -5,10 +5,7 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Trazo de borrador: se dibuja como líneas gruesas con color configurable (por defecto blanco).
- * No es rellenable. Se comporta como DibujoLibre pero con su propio grosor (tamBorrador).
- */
+
 public class Borrador extends Figura {
     private static final long serialVersionUID = 1L;
 

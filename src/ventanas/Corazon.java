@@ -3,10 +3,7 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Path2D;
 
-/**
- * Corazón rellenable que utiliza el diseño (proporciones Bezier) proporcionado por el usuario,
- * pero integrado al framework del proyecto (usa bounds, es FiguraRellenable, soporta mover/resize).
- */
+
 public class Corazon extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 
@@ -17,7 +14,7 @@ public class Corazon extends Figura implements FiguraRellenable {
         setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-    /** Construye el Path con la misma geometría del snippet del usuario, adaptada a bounds. */
+  
     private Shape buildShape() {
         int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
         double cx = x + w / 2.0;
