@@ -72,6 +72,7 @@ public class PanelDeDibujo extends JPanel {
         setBackground(Color.WHITE);
         setDoubleBuffered(true);
 
+        System.out.println("Probando Conflictos.");
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
