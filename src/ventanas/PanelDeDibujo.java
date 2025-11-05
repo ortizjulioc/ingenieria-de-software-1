@@ -73,6 +73,7 @@ public class PanelDeDibujo extends JPanel {
         setDoubleBuffered(true);
 
         System.out.println("Probando Conflictos.");
+        System.out.print("Yo estoy en el otro lado del conflicto\n");
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
