@@ -3,21 +3,19 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Path2D;
 
-/**
- * Corazón rellenable que utiliza el diseño (proporciones Bezier) proporcionado por el usuario,
- * pero integrado al framework del proyecto (usa bounds, es FiguraRellenable, soporta mover/resize).
- */
+
 public class Corazon extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 
     private Point inicio;
+    private Color colorRelleno;
 
     public Corazon(Point inicio) {
         this.inicio = inicio;
         setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-    /** Construye el Path con la misma geometría del snippet del usuario, adaptada a bounds. */
+  
     private Shape buildShape() {
         int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
         double cx = x + w / 2.0;
@@ -66,9 +64,11 @@ public class Corazon extends Figura implements FiguraRellenable {
 
         Shape s = buildShape();
         // Relleno
-        g2.setColor(getColorRelleno());
-        g2.fill(s);
-
+        if (colorRelleno != null) {
+            g2.setColor(getColorRelleno());
+            g2.fill(s);
+        }
+       
         // Contorno
         g2.setColor(getColorLinea());
         g2.setStroke(new BasicStroke(2f));
@@ -93,5 +93,20 @@ public class Corazon extends Figura implements FiguraRellenable {
         c.colorRelleno = this.colorRelleno;
         c.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return c;
+    }
+
+    @Override
+    public void setColorRelleno(Color c) {
+        this.colorRelleno = c;
+    }
+
+    @Override
+    public Color getColorRelleno() {
+        return colorRelleno;
+    }
+
+    @Override
+    public boolean esRellenable() {
+        return true;
     }
 }

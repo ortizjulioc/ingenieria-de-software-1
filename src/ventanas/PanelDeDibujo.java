@@ -8,11 +8,7 @@ import java.io.*;
 import java.util.*;
 import javax.imageio.ImageIO;
 
-/**
- * Panel principal con herramientas completas, Dibujo Libre, Borrador con silueta,
- * Undo/Redo, Copiar/Pegar, y botón Limpiar (expuesto desde la Ventana).
- * (Parche: la silueta del borrador ahora sigue el cursor mientras se arrastra).
- */
+
 public class PanelDeDibujo extends JPanel {
 
     public enum Herramienta {
@@ -53,7 +49,7 @@ public class PanelDeDibujo extends JPanel {
     private float tamBorrador = 12.0f;
     private Color colorBorrador = Color.WHITE;
 
-    // Selección / arrastre / resize
+  
     private Figura figuraSeleccionada = null;
     private boolean arrastrando = false;
     private boolean redimensionando = false;
@@ -61,15 +57,15 @@ public class PanelDeDibujo extends JPanel {
     private Point puntoAnterior = null;
     private double aspectRatioInicial = 1.0;
 
-    // Para mostrar silueta del borrador
+    
     private Point mousePos = null;
 
-    // Undo/Redo por snapshots
+    
     private final Deque<java.util.List<Figura>> undoStack = new ArrayDeque<>();
     private final Deque<java.util.List<Figura>> redoStack = new ArrayDeque<>();
     private boolean modificado = false;
 
-    // Portapapeles (copia de figuras)
+   
     private java.util.List<Figura> portapapeles = new ArrayList<>();
 
     public PanelDeDibujo() {
@@ -126,10 +122,10 @@ public class PanelDeDibujo extends JPanel {
                 }
 
                 if (herramienta == Herramienta.BORRADOR) {
-                    // Actualizamos la silueta desde el primer clic
+                   
                     mousePos = puntoAnterior;
                     Borrador b = new Borrador(puntoAnterior, tamBorrador);
-                    b.setColorLinea(colorBorrador); // "pinta" con color de borrador
+                    b.setColorLinea(colorBorrador); 
                     figuraActual = b;
                     figuras.add(figuraActual);
                     figuraSeleccionada = figuraActual;
@@ -139,7 +135,7 @@ public class PanelDeDibujo extends JPanel {
                     return;
                 }
 
-                // Creación de nuevas figuras
+              
                 switch (herramienta) {
                     case LINEA -> {
                         figuraActual = new Linea(puntoAnterior);
@@ -335,7 +331,7 @@ public class PanelDeDibujo extends JPanel {
                 }
 
                 if (herramienta == Herramienta.BORRADOR && figuraActual instanceof Borrador b) {
-                    // Actualizamos la silueta durante el arrastre
+                    
                     mousePos = p;
                     b.agregarPunto(p);
                     repaint();
@@ -406,7 +402,7 @@ public class PanelDeDibujo extends JPanel {
         getActionMap().put("paste", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) { pegar(); }
         });
-        // Ajuste rápido de grosor con + y - (pincel) cuando Dibujo Libre
+      
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "incStroke");
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "incStroke");
         getActionMap().put("incStroke", new AbstractAction() {
@@ -418,8 +414,16 @@ public class PanelDeDibujo extends JPanel {
             @Override public void actionPerformed(ActionEvent e) { setGrosorActual(Math.max(1f, grosorActual - 1f)); ajustarGrosorSeleccionado(grosorActual); }
         });
     }
-
-    // ==== Selección utilitaria ====
+    
+    public Figura getFiguraSeleccionada() {
+        return figuraSeleccionada;
+    }
+    
+    public void setFiguraSeleccionada(Figura f) {
+        this.figuraSeleccionada = f;
+        repaint();
+    }
+    
     private static final int HANDLE_SIZE = 8;
 
     private static double calcAspect(Rectangle b) {
@@ -509,7 +513,7 @@ public class PanelDeDibujo extends JPanel {
             g2.drawOval(mousePos.x - d/2, mousePos.y - d/2, d, d);
         }
 
-        // Bounding box y handles SOLO si es rellenable
+    
         if (figuraSeleccionada != null && (figuraSeleccionada instanceof FiguraRellenable)) {
             Rectangle b = figuraSeleccionada.getBounds();
             Stroke old = g2.getStroke();
@@ -523,7 +527,7 @@ public class PanelDeDibujo extends JPanel {
         }
     }
 
-    // ==== API para ventana ====
+    
     public void setHerramienta(Herramienta h) { this.herramienta = h; }
     public Herramienta getHerramienta() { return herramienta; }
     public void setColorLinea(Color c) { this.colorLinea = c; }
@@ -536,7 +540,7 @@ public class PanelDeDibujo extends JPanel {
     public void setColorBorrador(Color c) { this.colorBorrador = (c != null ? c : Color.WHITE); repaint(); }
     public Color getColorBorrador() { return colorBorrador; }
 
-    /** Si la selección es DibujoLibre, ajusta su grosor y repinta. */
+    
     public void ajustarGrosorSeleccionado(float g) {
         if (figuraSeleccionada instanceof DibujoLibre dl) {
             dl.setGrosor(g);
@@ -544,7 +548,7 @@ public class PanelDeDibujo extends JPanel {
         }
     }
 
-    // ==== Selección ====
+ 
     private Figura obtenerFiguraEnPunto(Point p) {
         for (int i = figuras.size() - 1; i >= 0; i--) {
             Figura f = figuras.get(i);

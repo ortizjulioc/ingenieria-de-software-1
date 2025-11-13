@@ -5,12 +5,10 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Dibujo libre con grosor de línea configurable.
- * No es rellenable ni muestra bounding box.
- */
+
 public class DibujoLibre extends Figura {
     private static final long serialVersionUID = 1L;
+    private Color colorRelleno;
 
     private final List<Point> puntos = new ArrayList<>();
     private float grosor = 2.0f;

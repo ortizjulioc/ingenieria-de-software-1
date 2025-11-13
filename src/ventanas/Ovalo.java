@@ -3,10 +3,11 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
-/** Óvalo rellenable (usa bounds y respeta proporciones si así lo decides desde el panel). */
+
 public class Ovalo extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 
+    private Color colorRelleno;
     private Point inicio;
 
     public Ovalo(Point inicio) {
@@ -19,8 +20,11 @@ public class Ovalo extends Figura implements FiguraRellenable {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Shape s = new Ellipse2D.Double(bounds.x, bounds.y, bounds.width, bounds.height);
-        g2.setColor(colorRelleno);
-        g2.fill(s);
+        // Rellenar solo si hay color
+        if (colorRelleno != null) {
+            g2.setColor(colorRelleno);
+            g2.fill(s);
+        }
         g2.setColor(colorLinea);
         g2.draw(s);
     }
@@ -43,5 +47,20 @@ public class Ovalo extends Figura implements FiguraRellenable {
         o.colorRelleno = this.colorRelleno;
         o.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return o;
+    }
+
+    @Override
+    public void setColorRelleno(Color c) {
+        this.colorRelleno = c;
+    }
+
+    @Override
+    public Color getColorRelleno() {
+        return colorRelleno;
+    }
+
+    @Override
+    public boolean esRellenable() {
+        return true;
     }
 }
