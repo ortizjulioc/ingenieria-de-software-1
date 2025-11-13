@@ -9,6 +9,7 @@ public class Nube extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 
     private Point inicio;
+    private Color colorRelleno;
 
     public Nube(Point inicio) {
         this.inicio = inicio;
@@ -50,10 +51,11 @@ public class Nube extends Figura implements FiguraRellenable {
 
         Shape s = buildShape();
 
-      
-        g2.setColor(getColorRelleno());
-        g2.fill(s);
-
+        // Rellenar solo si hay color
+        if (colorRelleno != null) {
+            g2.setColor(getColorRelleno());
+            g2.fill(s);
+        } 
         
         g2.setColor(getColorLinea());
         g2.setStroke(new BasicStroke(2f));
@@ -78,5 +80,20 @@ public class Nube extends Figura implements FiguraRellenable {
         n.colorRelleno = this.colorRelleno;
         n.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return n;
+    }
+
+    @Override
+    public void setColorRelleno(Color c) {
+        this.colorRelleno = c;
+    }
+
+    @Override
+    public Color getColorRelleno() {
+        return colorRelleno;
+    }
+
+    @Override
+    public boolean esRellenable() {
+        return true;
     }
 }

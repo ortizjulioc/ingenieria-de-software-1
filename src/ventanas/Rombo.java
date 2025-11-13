@@ -6,6 +6,7 @@ import java.awt.geom.Path2D;
 public class Rombo extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
     private Point inicio;
+    private Color colorRelleno;
 
     public Rombo(Point inicio) {
         this.inicio = inicio;
@@ -27,7 +28,12 @@ public class Rombo extends Figura implements FiguraRellenable {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Shape s = buildShape();
-        g2.setColor(colorRelleno); g2.fill(s);
+        // Rellenar solo si hay color
+        if (colorRelleno != null) {
+            g2.setColor(colorRelleno);
+            g2.fill(s);
+        }
+        
         g2.setColor(colorLinea);   g2.draw(s);
     }
 
@@ -45,5 +51,20 @@ public class Rombo extends Figura implements FiguraRellenable {
         r.colorLinea = this.colorLinea; r.colorRelleno = this.colorRelleno;
         r.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return r;
+    }
+
+    @Override
+    public void setColorRelleno(Color c) {
+        this.colorRelleno = c;
+    }
+
+    @Override
+    public Color getColorRelleno() {
+        return colorRelleno;
+    }
+
+    @Override
+    public boolean esRellenable() {
+        return true;
     }
 }

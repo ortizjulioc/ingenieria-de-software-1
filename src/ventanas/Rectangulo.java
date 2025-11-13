@@ -9,6 +9,7 @@ public class Rectangulo extends Figura implements FiguraRellenable {
     private Point inicio;
     private boolean mantenerProporcion = false;
     private double aspectRatioInicial = 1.0;
+    private Color colorRelleno;
 
     public Rectangulo(Point inicio) {
         this.inicio = inicio;
@@ -20,8 +21,11 @@ public class Rectangulo extends Figura implements FiguraRellenable {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Shape s = new Rectangle2D.Double(bounds.x, bounds.y, bounds.width, bounds.height);
-        g2.setColor(colorRelleno);
-        g2.fill(s);
+        // Rellenar solo si hay color
+        if (colorRelleno != null) {
+            g2.setColor(colorRelleno);
+            g2.fill(s);
+        }
         g2.setColor(colorLinea);
         g2.draw(s);
     }
@@ -70,5 +74,20 @@ public class Rectangulo extends Figura implements FiguraRellenable {
         r.colorRelleno = this.colorRelleno;
         r.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return r;
+    }
+
+    @Override
+    public void setColorRelleno(Color c) {
+        this.colorRelleno = c;
+    }
+
+    @Override
+    public Color getColorRelleno() {
+        return colorRelleno;
+    }
+
+    @Override
+    public boolean esRellenable() {
+        return true;
     }
 }

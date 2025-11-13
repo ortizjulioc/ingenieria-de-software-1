@@ -414,7 +414,15 @@ public class PanelDeDibujo extends JPanel {
             @Override public void actionPerformed(ActionEvent e) { setGrosorActual(Math.max(1f, grosorActual - 1f)); ajustarGrosorSeleccionado(grosorActual); }
         });
     }
-
+    
+    public Figura getFiguraSeleccionada() {
+        return figuraSeleccionada;
+    }
+    
+    public void setFiguraSeleccionada(Figura f) {
+        this.figuraSeleccionada = f;
+        repaint();
+    }
     
     private static final int HANDLE_SIZE = 8;
 

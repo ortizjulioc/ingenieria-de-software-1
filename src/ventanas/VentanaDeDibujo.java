@@ -387,6 +387,16 @@ public class VentanaDeDibujo extends JFrame {
             }
         });
         panelPropiedades.add(swRellenoProp, c);
+        
+        // Boton “Sin relleno”
+        c.gridy++;
+        JButton botonSinRelleno = new JButton("Sin relleno");
+        botonSinRelleno.addActionListener(e -> {
+            colorRelleno = null;                  // null = sin relleno
+            swRellenoProp.setColor(null);         // actualiza el swatch para mostrar transparencia
+            controller.setColorRelleno(null);     // actualiza modelo y figura seleccionada
+        });
+        panelPropiedades.add(botonSinRelleno, c);
 
         // Spacer
         c.gridy++; c.weighty = 1.0;
