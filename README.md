@@ -7,7 +7,7 @@ Sirve para practicar programación gráfica, POO, eventos de ratón/teclado, y u
 
 - Pinceles: Dibujo libre (fino, medio, grueso) y Borrador con guía circular.
 
-- Figuras: Rectángulo, Línea, Triángulo, Círculo, Pentágono, Hexágono, Estrella, Corazón Óvalo, Rombo, Trapecio, Arco, Nube y Flechas (↑ ↓ → ←).
+- Figuras: Rectángulo, Línea, Triángulo, Círculo, Pentágono, Hexágono, Estrella, Corazón, Óvalo, Rombo, Trapecio, Arco, Nube y Flechas (↑ ↓ → ←).
 
 - Colores: de línea y relleno, configurables por separado.
 
