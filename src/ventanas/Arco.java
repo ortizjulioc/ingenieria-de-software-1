@@ -8,6 +8,7 @@ public class Arco extends Figura {
     private static final long serialVersionUID = 1L;
 
     private Point inicio;
+    private Color colorRelleno;
 
     public Arco(Point inicio) {
         this.inicio = inicio;
@@ -55,4 +56,9 @@ public class Arco extends Figura {
         copia.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return copia;
     }
+
+    void setColorRelleno(Color colorRelleno) {
+        // no hace nada
+    }
+ 
 }

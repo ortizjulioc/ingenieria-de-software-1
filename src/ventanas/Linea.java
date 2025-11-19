@@ -7,6 +7,7 @@ import java.awt.*;
  */
 public class Linea extends Figura {
     private static final long serialVersionUID = 1L;
+    private Color colorRelleno;
 
     private Point p1, p2;
 

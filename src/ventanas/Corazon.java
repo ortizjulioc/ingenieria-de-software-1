@@ -8,6 +8,7 @@ public class Corazon extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 
     private Point inicio;
+    private Color colorRelleno;
 
     public Corazon(Point inicio) {
         this.inicio = inicio;
@@ -63,9 +64,11 @@ public class Corazon extends Figura implements FiguraRellenable {
 
         Shape s = buildShape();
         // Relleno
-        g2.setColor(getColorRelleno());
-        g2.fill(s);
-
+        if (colorRelleno != null) {
+            g2.setColor(getColorRelleno());
+            g2.fill(s);
+        }
+       
         // Contorno
         g2.setColor(getColorLinea());
         g2.setStroke(new BasicStroke(2f));
@@ -90,5 +93,20 @@ public class Corazon extends Figura implements FiguraRellenable {
         c.colorRelleno = this.colorRelleno;
         c.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return c;
+    }
+
+    @Override
+    public void setColorRelleno(Color c) {
+        this.colorRelleno = c;
+    }
+
+    @Override
+    public Color getColorRelleno() {
+        return colorRelleno;
+    }
+
+    @Override
+    public boolean esRellenable() {
+        return true;
     }
 }

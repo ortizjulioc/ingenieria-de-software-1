@@ -8,6 +8,7 @@ import java.util.List;
 
 public class Borrador extends Figura {
     private static final long serialVersionUID = 1L;
+    private Color colorRelleno;
 
     private final List<Point> puntos = new ArrayList<>();
     private float tamBorrador = 12f; // px

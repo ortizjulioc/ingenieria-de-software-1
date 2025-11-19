@@ -42,6 +42,15 @@ public class DibujoController {
         panel.setColorBorrador(modelo.getColorBorrador());
     }
 
+    // Actualiza el color de relleno de la figura seleccionada (si es rellenable)
+    public void actualizarColorRelleno(Color c) {
+        Figura f = panel.getFiguraSeleccionada();
+        if(f instanceof FiguraRellenable fr) {
+             fr.setColorRelleno(c);  //null = sin relleno
+            panel.repaint();
+    }
+    }
+
     
     public void setHerramienta(ModeloDibujo.Herramienta h)       { modelo.setHerramienta(h); }
     public void setColorLinea(Color c)                           { modelo.setColorLinea(c); }

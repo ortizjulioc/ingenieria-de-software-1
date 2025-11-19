@@ -72,8 +72,6 @@ public class PanelDeDibujo extends JPanel {
         setBackground(Color.WHITE);
         setDoubleBuffered(true);
 
-        System.out.println("Probando Conflictos.");
-        System.out.print("Yo estoy en el otro lado del conflicto\n");
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -416,7 +414,15 @@ public class PanelDeDibujo extends JPanel {
             @Override public void actionPerformed(ActionEvent e) { setGrosorActual(Math.max(1f, grosorActual - 1f)); ajustarGrosorSeleccionado(grosorActual); }
         });
     }
-
+    
+    public Figura getFiguraSeleccionada() {
+        return figuraSeleccionada;
+    }
+    
+    public void setFiguraSeleccionada(Figura f) {
+        this.figuraSeleccionada = f;
+        repaint();
+    }
     
     private static final int HANDLE_SIZE = 8;
 

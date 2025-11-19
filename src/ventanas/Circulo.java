@@ -7,6 +7,7 @@ public class Circulo extends Figura implements FiguraRellenable {
     private static final long serialVersionUID = 1L;
 
     private Point inicio;
+    private Color colorRelleno;
 
     public Circulo(Point inicio) {
         this.inicio = inicio;
@@ -21,8 +22,11 @@ public class Circulo extends Figura implements FiguraRellenable {
         int x = bounds.x + (bounds.width - d) / 2;
         int y = bounds.y + (bounds.height - d) / 2;
         Shape s = new Ellipse2D.Double(x, y, d, d);
-        g2.setColor(colorRelleno);
-        g2.fill(s);
+        // Rellenar solo si hay color
+        if (colorRelleno != null) {
+            g2.setColor(colorRelleno);
+            g2.fill(s);
+        }
         g2.setColor(colorLinea);
         g2.draw(s);
     }
@@ -45,5 +49,20 @@ public class Circulo extends Figura implements FiguraRellenable {
         c.colorRelleno = this.colorRelleno;
         c.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return c;
+    }
+
+    @Override
+    public void setColorRelleno(Color c) {
+        this.colorRelleno = c;
+    }
+
+    @Override
+    public Color getColorRelleno() {
+        return colorRelleno;
+    }
+
+    @Override
+    public boolean esRellenable() {
+        return true;
     }
 }

@@ -8,8 +8,6 @@ public abstract class Figura implements Serializable {
     private static final long serialVersionUID = 1L;
 
     protected Color colorLinea = Color.BLACK;
-    protected Color colorRelleno = Color.WHITE;
-
    
     protected Rectangle bounds = new Rectangle(0, 0, 0, 0);
 
@@ -39,7 +37,4 @@ public abstract class Figura implements Serializable {
 
     public void setColorLinea(Color c) { this.colorLinea = c; }
     public Color getColorLinea() { return colorLinea; }
-
-    public void setColorRelleno(Color c) { this.colorRelleno = c; }
-    public Color getColorRelleno() { return colorRelleno; }
 }
