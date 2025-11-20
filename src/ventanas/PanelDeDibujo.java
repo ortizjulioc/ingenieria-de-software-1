@@ -67,8 +67,13 @@ public class PanelDeDibujo extends JPanel {
 
    
     private java.util.List<Figura> portapapeles = new ArrayList<>();
+    
+    private ImageHandler imageHandler;
+    
 
     public PanelDeDibujo() {
+ 
+        imageHandler = new ImageHandler();   // MUY IMPORTANTE
         setBackground(Color.WHITE);
         setDoubleBuffered(true);
 
@@ -496,6 +501,12 @@ public class PanelDeDibujo extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        
+        if (imageHandler != null && imageHandler.hasImage()) {
+            imageHandler.drawImage(g, getWidth(), getHeight());
+        }
+
+        
         for (Figura f : figuras) f.dibujar(g2);
 
         // Silueta del borrador (overlay)
@@ -643,6 +654,23 @@ public class PanelDeDibujo extends JPanel {
             } else throw new IOException("Formato de proyecto inválido.");
         }
     }
+    
+      public boolean tieneImagen() {
+        return imageHandler != null && imageHandler.hasImage();
+    }
 
+    public void cargarImagen(JFrame parent) {
+        if (imageHandler.loadImage(parent)) {
+            repaint();
+        }
+    }
+
+    public void limpiarImagen() {
+        if (imageHandler != null) {
+            imageHandler.clear();
+            repaint();
+        }
+    }
+    
     public boolean isModificado() { return modificado; }
 }

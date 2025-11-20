@@ -170,6 +170,8 @@ public class VentanaDeDibujo extends JFrame {
  
     private JToolBar crearToolbar() {
         JToolBar tb = new JToolBar();
+        JButton btInsertarImg = new JButton("Insertar imagen");
+        JButton btEliminarImg = new JButton("Eliminar imagen");
         tb.setFloatable(false);
         tb.setRollover(true);
         tb.setBorder(new EmptyBorder(6, 8, 6, 8));
@@ -257,6 +259,22 @@ public class VentanaDeDibujo extends JFrame {
         toggleProps.addActionListener(e -> togglePropiedades());
         tb.add(toggleProps);
 
+      
+          btInsertarImg.addActionListener(e -> {
+          panel.cargarImagen(this);   // Llama a JFileChooser
+          btEliminarImg.setEnabled(panel.tieneImagen());
+          });
+
+        btEliminarImg.setEnabled(false);
+        btEliminarImg.addActionListener(e -> {
+        panel.limpiarImagen();
+        btEliminarImg.setEnabled(panel.tieneImagen());
+       });
+
+        
+        tb.add(btInsertarImg);
+        tb.add(btEliminarImg);
+ 
         return tb;
     }
 
