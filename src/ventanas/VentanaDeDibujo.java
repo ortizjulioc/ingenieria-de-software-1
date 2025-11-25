@@ -169,96 +169,153 @@ public class VentanaDeDibujo extends JFrame {
 
  
     private JToolBar crearToolbar() {
-        JToolBar tb = new JToolBar();
-        tb.setFloatable(false);
-        tb.setRollover(true);
-        tb.setBorder(new EmptyBorder(6, 8, 6, 8));
-        tb.setBackground(new Color(245, 247, 250)); // gris muy claro
+    JToolBar tb = new JToolBar();
+    tb.setFloatable(false);
+    tb.setRollover(true);
+    tb.setBorder(new EmptyBorder(6, 8, 6, 8));
+    tb.setBackground(new Color(245, 247, 250));
+    tb.addSeparator(new Dimension(12,0));
 
-        // Helper de estilo
-        java.util.function.Consumer<AbstractButton> stylize = btn -> {
-            btn.setFocusPainted(false);
-            btn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
-            btn.setOpaque(true);
-            btn.setBackground(new Color(245, 247, 250));
-            btn.addChangeListener(e -> {
-                if (btn.isSelected()) btn.setBackground(new Color(225, 230, 236));
-            });
-            btn.addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered(MouseEvent e) {
-                    if(!btn.isSelected()) btn.setBackground(new Color(232, 236, 240));
-                }
-                @Override public void mouseExited(MouseEvent e) {
-                    if(!btn.isSelected()) btn.setBackground(new Color(245, 247, 250));
-                }
-            });
-        };
-
-        ButtonGroup group = new ButtonGroup();
-
-        // Grupo 1
-        JToggleButton btSel = new JToggleButton(new ShapeIcon(IconType.CURSOR));
-        btSel.setToolTipText("Selección (V)");
-        btSel.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.SELECCION));
-        btSel.setSelected(true);
-        stylize.accept(btSel); group.add(btSel); tb.add(btSel);
-
-        JToggleButton btLapiz = new JToggleButton(new ShapeIcon(IconType.PENCIL));
-        btLapiz.setToolTipText("Dibujo libre (B)");
-        btLapiz.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.DIBUJO_LIBRE));
-        stylize.accept(btLapiz); group.add(btLapiz); tb.add(btLapiz);
-
-        JToggleButton btBorr = new JToggleButton(new ShapeIcon(IconType.ERASER));
-        btBorr.setToolTipText("Borrador (E)");
-        btBorr.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.BORRADOR));
-        stylize.accept(btBorr); group.add(btBorr); tb.add(btBorr);
-
-        tb.addSeparator(new Dimension(12,0));
-
-        // Grupo 2 – Figuras (menú)
-        JButton btFig = new JButton(new ShapeIcon(IconType.SHAPES));
-        btFig.setToolTipText("Figuras");
-        stylize.accept(btFig);
-
-        JPopupMenu menuFig = crearMenuFiguras(group, btSel, btLapiz, btBorr);
-        btFig.addActionListener(e -> menuFig.show(btFig, 0, btFig.getHeight()));
-        tb.add(btFig);
-
-        tb.addSeparator(new Dimension(12,0));
-
-        // Grupo 3 – Colores (swatches)
-        ColorSwatchButton swLinea = new ColorSwatchButton(colorLinea);
-        swLinea.setToolTipText("Color de línea");
-        swLinea.addActionListener(e -> {
-            Color c = JColorChooser.showDialog(this, "Selecciona color de línea", colorLinea);
-            if (c != null) { colorLinea = c; controller.setColorLinea(c); swLinea.setColor(c); }
+    // Helper de estilo
+    java.util.function.Consumer<AbstractButton> stylize = btn -> {
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+        btn.setOpaque(true);
+        btn.setBackground(new Color(245, 247, 250));
+        btn.addChangeListener(e -> {
+            if (btn.isSelected()) btn.setBackground(new Color(225, 230, 236));
         });
-        tb.add(swLinea);
-
-        ColorSwatchButton swRelleno = new ColorSwatchButton(colorRelleno);
-        swRelleno.setToolTipText("Color de relleno");
-        swRelleno.addActionListener(e -> {
-            Color c = JColorChooser.showDialog(this, "Selecciona color de relleno", colorRelleno);
-            if (c != null) { colorRelleno = c; controller.setColorRelleno(c); swRelleno.setColor(c); }
+        btn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) {
+                if(!btn.isSelected()) btn.setBackground(new Color(232, 236, 240));
+            }
+            @Override public void mouseExited(MouseEvent e) {
+                if(!btn.isSelected()) btn.setBackground(new Color(245, 247, 250));
+            }
         });
-        tb.add(swRelleno);
+    };
 
-        JToggleButton btCubeta = new JToggleButton(new ShapeIcon(IconType.BUCKET));
-        btCubeta.setToolTipText("Cubeta de pintura");
-        stylize.accept(btCubeta); group.add(btCubeta); tb.add(btCubeta);
-        btCubeta.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.CUBETA));
+    ButtonGroup group = new ButtonGroup();
 
-        tb.addSeparator(new Dimension(12,0));
+    // Grupo 1 - Herramientas básicas
+    JToggleButton btSel = new JToggleButton(new ShapeIcon(IconType.CURSOR));
+    btSel.setToolTipText("Selección (V)");
+    btSel.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.SELECCION));
+    btSel.setSelected(true);
+    stylize.accept(btSel); group.add(btSel); tb.add(btSel);
 
-        // Grupo 4 – Propiedades (toggle panel)
-        JButton toggleProps = new JButton(new ShapeIcon(IconType.PANELS));
-        toggleProps.setToolTipText("Mostrar/Ocultar propiedades");
-        stylize.accept(toggleProps);
-        toggleProps.addActionListener(e -> togglePropiedades());
-        tb.add(toggleProps);
+    JToggleButton btLapiz = new JToggleButton(new ShapeIcon(IconType.PENCIL));
+    btLapiz.setToolTipText("Dibujo libre (B)");
+    btLapiz.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.DIBUJO_LIBRE));
+    stylize.accept(btLapiz); group.add(btLapiz); tb.add(btLapiz);
 
-        return tb;
-    }
+    JToggleButton btBorr = new JToggleButton(new ShapeIcon(IconType.ERASER));
+    btBorr.setToolTipText("Borrador (E)");
+    btBorr.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.BORRADOR));
+    stylize.accept(btBorr); group.add(btBorr); tb.add(btBorr);
+
+    tb.addSeparator(new Dimension(12,0));
+
+    // Grupo 2 – Figuras (menú)
+    JButton btFig = new JButton(new ShapeIcon(IconType.SHAPES));
+    btFig.setToolTipText("Figuras");
+    stylize.accept(btFig);
+    JPopupMenu menuFig = crearMenuFiguras(group, btSel, btLapiz, btBorr);
+    btFig.addActionListener(e -> menuFig.show(btFig, 0, btFig.getHeight()));
+    tb.add(btFig);
+
+    tb.addSeparator(new Dimension(12,0));
+
+    // Grupo 3 – Colores
+    ColorSwatchButton swLinea = new ColorSwatchButton(colorLinea);
+    swLinea.setToolTipText("Color de línea");
+    swLinea.addActionListener(e -> {
+        Color c = JColorChooser.showDialog(this, "Selecciona color de línea", colorLinea);
+        if (c != null) { colorLinea = c; controller.setColorLinea(c); swLinea.setColor(c); }
+    });
+    tb.add(swLinea);
+
+    ColorSwatchButton swRelleno = new ColorSwatchButton(colorRelleno);
+    swRelleno.setToolTipText("Color de relleno");
+    swRelleno.addActionListener(e -> {
+        Color c = JColorChooser.showDialog(this, "Selecciona color de relleno", colorRelleno);
+        if (c != null) { colorRelleno = c; controller.setColorRelleno(c); swRelleno.setColor(c); }
+    });
+    tb.add(swRelleno);
+
+    JToggleButton btCubeta = new JToggleButton(new ShapeIcon(IconType.BUCKET));
+    btCubeta.setToolTipText("Cubeta de pintura");
+    stylize.accept(btCubeta); group.add(btCubeta); tb.add(btCubeta);
+    btCubeta.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.CUBETA));
+
+    tb.addSeparator(new Dimension(12,0));
+
+    // ========== BOTONES DE IMAGEN ==========
+    // Declarar los botones
+    final JButton btEliminarImg = new JButton("Eliminar imagen");
+    final JButton btRecortarImg = new JButton("Recortar imagen");
+    final JButton btInsertarImg = new JButton("Insertar imagen");
+
+    // Aplicar estilo
+    stylize.accept(btInsertarImg);
+    stylize.accept(btEliminarImg);
+    stylize.accept(btRecortarImg);
+
+    // Inicialmente deshabilitados (no hay imagen)
+    btEliminarImg.setEnabled(false);
+    btRecortarImg.setEnabled(false);
+
+    // BOTÓN INSERTAR
+    btInsertarImg.addActionListener(e -> {
+        panel.cargarImagen(this);
+        boolean tieneImg = panel.tieneImagen();
+        btEliminarImg.setEnabled(tieneImg);
+        btRecortarImg.setEnabled(tieneImg);
+    });
+
+    // BOTÓN RECORTAR
+    btRecortarImg.addActionListener(e -> {
+        if (panel.tieneImagen()) {
+            panel.activarModoRecorte();
+            JOptionPane.showMessageDialog(this, 
+                "Arrastra el mouse sobre la imagen para seleccionar el área a recortar.\nSuelta el mouse para aplicar el recorte.",
+                "Modo Recorte", JOptionPane.INFORMATION_MESSAGE);
+
+            // Verificar estado después del recorte
+            SwingUtilities.invokeLater(() -> {
+                boolean tieneImg = panel.tieneImagen();
+                btEliminarImg.setEnabled(tieneImg);
+                btRecortarImg.setEnabled(tieneImg);
+            });
+        }
+    });
+
+    // BOTÓN ELIMINAR
+    btEliminarImg.addActionListener(e -> {
+        if (panel.tieneImagen()) {
+            panel.eliminarImagenYContenido();
+            btEliminarImg.setEnabled(false);
+            btRecortarImg.setEnabled(false);
+        }
+    });
+
+    // Agregar botones a la toolbar
+    tb.add(btInsertarImg);
+    tb.add(btRecortarImg);
+    tb.add(btEliminarImg);
+    // ========== FIN BOTONES DE IMAGEN ==========
+
+    tb.addSeparator(new Dimension(12,0));
+
+    // Grupo 4 – Propiedades
+    JButton toggleProps = new JButton(new ShapeIcon(IconType.PANELS));
+    toggleProps.setToolTipText("Mostrar/Ocultar propiedades");
+    stylize.accept(toggleProps);
+    toggleProps.addActionListener(e -> togglePropiedades());
+    tb.add(toggleProps);
+
+    return tb;
+}
 
     private void togglePropiedades() {
         propsVisible = !propsVisible;
