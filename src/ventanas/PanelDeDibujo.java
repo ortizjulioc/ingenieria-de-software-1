@@ -48,7 +48,8 @@ public class PanelDeDibujo extends JPanel {
     // Borrador: tamaño y color (por defecto blanco)
     private float tamBorrador = 12.0f;
     private Color colorBorrador = Color.WHITE;
-
+   // ImageHandler gestiona la carga, visualización y limpieza de una imagen de fondo
+     private ImageHandler imageHandler = new ImageHandler();
   
     private Figura figuraSeleccionada = null;
     private boolean arrastrando = false;
@@ -57,27 +58,52 @@ public class PanelDeDibujo extends JPanel {
     private Point puntoAnterior = null;
     private double aspectRatioInicial = 1.0;
 
-    
     private Point mousePos = null;
-
+    
     
     private final Deque<java.util.List<Figura>> undoStack = new ArrayDeque<>();
     private final Deque<java.util.List<Figura>> redoStack = new ArrayDeque<>();
     private boolean modificado = false;
+   
+        // =====================
+    // VARIABLES PARA RECORTE DE IMAGEN (TIPO PAINT)
+    // =====================
+
+    // Indica si el modo recorte está activado
+    private boolean cropMode = false;
+
+    // Punto donde el usuario empieza a arrastrar el mouse
+    private Point startPoint;
+
+    // Rectángulo visual del área que se va a recortar
+    private Rectangle cropRectangle;
 
    
     private java.util.List<Figura> portapapeles = new ArrayList<>();
+    
 
     public PanelDeDibujo() {
+ 
+        imageHandler = new ImageHandler();   // MUY IMPORTANTE
         setBackground(Color.WHITE);
         setDoubleBuffered(true);
 
-        MouseAdapter mouse = new MouseAdapter() {
+        MouseAdapter mouse;
+        mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                
+                // Si el modo recorte está activado
+                // Se guarda el punto inicial del arrastre del mouse
+                    
+                if (cropMode) {
+                    startPoint = e.getPoint();
+                    cropRectangle = new Rectangle();
+                }
+                
                 requestFocusInWindow();
                 puntoAnterior = e.getPoint();
-
+        
                 if (herramienta == Herramienta.CUBETA) {
                     Figura f = obtenerFiguraEnPunto(puntoAnterior);
                     if (f instanceof FiguraRellenable fr) {
@@ -134,8 +160,8 @@ public class PanelDeDibujo extends JPanel {
                     repaint();
                     return;
                 }
-
-              
+                
+                
                 switch (herramienta) {
                     case LINEA -> {
                         figuraActual = new Linea(puntoAnterior);
@@ -296,7 +322,22 @@ public class PanelDeDibujo extends JPanel {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                Point p = e.getPoint();
+                
+                // Mientras arrastra el mouse en modo recorte
+                // se va formando el rectángulo visual
+                if (cropMode && startPoint != null) {
+                int x = Math.min(startPoint.x, e.getX());
+                int y = Math.min(startPoint.y, e.getY());
+                int w = Math.abs(startPoint.x - e.getX());
+                int h = Math.abs(startPoint.y - e.getY());
+              
+                // Se crea el rectángulo con las nuevas coordenadas
+                cropRectangle = new Rectangle(x, y, w, h);
+                repaint();
+                return;
+               }
+                
+                 Point p = e.getPoint();
 
                 if (herramienta == Herramienta.SELECCION) {
                     if (figuraSeleccionada != null) {
@@ -342,6 +383,9 @@ public class PanelDeDibujo extends JPanel {
                     figuraActual.actualizar(p);
                     repaint();
                 }
+              
+                repaint();
+                      
             }
 
             @Override
@@ -363,6 +407,14 @@ public class PanelDeDibujo extends JPanel {
                 redimensionando = false;
                 handleActivo = -1;
                 puntoAnterior = null;
+                
+                // Al soltar el mouse, si estaba en modo recorte,
+                // se procede a recortar la imagen
+                if (cropMode && cropRectangle != null) {
+                    recortarImagen();  // Se ejecuta el recorte
+                    cropMode = false;  // Se desactiva el modo recorte
+                    repaint();          // Se redibuja el panel
+                }          
             }
         };
 
@@ -424,6 +476,48 @@ public class PanelDeDibujo extends JPanel {
         repaint();
     }
     
+    public void activarModoRecorte() {
+     cropMode = true;
+    }
+    
+    /**
+ * Recorta la imagen según el rectángulo que el usuario seleccionó.
+ * La imagen recortada se vuelve a escalar automáticamente
+ * al tamaño completo del lienzo.
+ */
+    private void recortarImagen() {
+
+        // Si no hay imagen o no hay área seleccionada, salir
+        if (!imageHandler.hasImage() || cropRectangle == null) return;
+
+        // Obtener la imagen original
+        BufferedImage original = imageHandler.getImagen();
+
+        // Calcular relación entre imagen real y tamaño del panel
+        double scaleX = (double) original.getWidth() / getWidth();
+        double scaleY = (double) original.getHeight() / getHeight();
+
+        // Convertir coordenadas del panel a coordenadas reales de la imagen
+        int x = (int) (cropRectangle.x * scaleX);
+        int y = (int) (cropRectangle.y * scaleY);
+        int w = (int) (cropRectangle.width * scaleX);
+        int h = (int) (cropRectangle.height * scaleY);
+
+        // Evitar errores si se sale de la imagen original
+        x = Math.max(0, x);
+        y = Math.max(0, y);
+        w = Math.min(w, original.getWidth() - x);
+        h = Math.min(h, original.getHeight() - y);
+
+        // Crear la nueva imagen recortada
+        BufferedImage recortada = original.getSubimage(x, y, w, h);
+        // Sustituir la imagen original por la recortada
+        imageHandler.setImagen(recortada);
+
+        // Eliminar el rectángulo visual
+        cropRectangle = null;
+    }
+ 
     private static final int HANDLE_SIZE = 8;
 
     private static double calcAspect(Rectangle b) {
@@ -492,9 +586,27 @@ public class PanelDeDibujo extends JPanel {
     // ==== Pintado ====
     @Override
     protected void paintComponent(Graphics g) {
+        
         super.paintComponent(g);
+    
         Graphics2D g2 = (Graphics2D) g;
+        
+         if (imageHandler != null && imageHandler.hasImage()) { 
+          imageHandler.drawImage(g, getWidth(), getHeight()); 
+       }
+         
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+
+        
+        if (imageHandler != null && imageHandler.hasImage()) {
+            imageHandler.drawImage(g, getWidth(), getHeight());
+        }
+
+        
+
+        
+          // Dibujar todas las figuras
 
         for (Figura f : figuras) f.dibujar(g2);
 
@@ -512,8 +624,8 @@ public class PanelDeDibujo extends JPanel {
             g2.setStroke(new BasicStroke(1f));
             g2.drawOval(mousePos.x - d/2, mousePos.y - d/2, d, d);
         }
-
-    
+ 
+        // dibuja seleccion de figura)
         if (figuraSeleccionada != null && (figuraSeleccionada instanceof FiguraRellenable)) {
             Rectangle b = figuraSeleccionada.getBounds();
             Stroke old = g2.getStroke();
@@ -524,6 +636,36 @@ public class PanelDeDibujo extends JPanel {
             g2.setStroke(old);
 
             for (Rectangle h : handles(b)) g2.fillRect(h.x, h.y, h.width, h.height);
+         }
+ 
+        // 5. Área de recorte (DEBE IR AL FINAL)
+        if (cropMode && cropRectangle != null) {
+            // Oscurecer el área fuera del recorte
+            Composite oldComp = g2.getComposite();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            g2.setColor(Color.BLACK);
+
+            // Dibujar rectángulos alrededor del área de recorte
+            g2.fillRect(0, 0, getWidth(), cropRectangle.y); // Arriba
+            g2.fillRect(0, cropRectangle.y, cropRectangle.x, cropRectangle.height); // Izquierda
+            g2.fillRect(cropRectangle.x + cropRectangle.width, cropRectangle.y, 
+                        getWidth() - cropRectangle.x - cropRectangle.width, cropRectangle.height); // Derecha
+            g2.fillRect(0, cropRectangle.y + cropRectangle.height, 
+                        getWidth(), getHeight() - cropRectangle.y - cropRectangle.height); // Abajo
+
+            g2.setComposite(oldComp);
+
+            // Línea punteada azul
+            float[] dash = {10f};
+            g2.setStroke(new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, dash, 0.0f));
+            g2.setColor(Color.CYAN);
+            g2.draw(cropRectangle);
+
+            // Mostrar dimensiones
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.BOLD, 12));
+            String dim = cropRectangle.width + " × " + cropRectangle.height;
+            g2.drawString(dim, cropRectangle.x + 5, cropRectangle.y - 5);
         }
     }
 
@@ -643,6 +785,57 @@ public class PanelDeDibujo extends JPanel {
             } else throw new IOException("Formato de proyecto inválido.");
         }
     }
+    
+
+          public boolean tieneImagen() {
+            return imageHandler != null && imageHandler.hasImage();
+          }
+
+        public void cargarImagen(JFrame parent) { 
+            if (imageHandler.loadImage(parent)) { 
+                repaint(); 
+            } 
+        } 
+
+    // Elimina la imagen actual del lienzo y todas las figuras dibujadas encima de ella
+       public void eliminarImagenYContenido() {
+        if (imageHandler != null && imageHandler.hasImage()) {
+            pushUndo();
+            Rectangle areaImagen = imageHandler.getImageBounds(getWidth(), getHeight());
+
+            if (areaImagen != null) {
+                figuras.removeIf(figura -> areaImagen.intersects(figura.getBounds()));
+            }
+            imageHandler.clear();
+            figuraSeleccionada = null;
+            modificado = true;
+            repaint();
+        }
+    }
+       
+      
+ 
+    
+       
+          public BufferedImage getImagen() { 
+          return imageHandler != null ? imageHandler.getImagen() : null; 
+        }
+    
+         public void setImagen(BufferedImage img) {
+        if (imageHandler != null) {
+            pushUndo(); // Guarda estado previo para undo
+            imageHandler.setImagen(img);
+            modificado = true;
+            repaint();
+        }
+       }
+
+        public void limpiarImagen() {
+            if (imageHandler != null) {
+                imageHandler.clear();
+                repaint();
+            }
+        }
 
     public boolean isModificado() { return modificado; }
 }
