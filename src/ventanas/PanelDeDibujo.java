@@ -834,11 +834,12 @@ public class PanelDeDibujo extends JPanel {
         }
 //---------------------------------------------------------------------------------
         // 1.5) Rectángulo guía mientras se dibuja una figura (tipo Paint)
+        // 1.5) Rectángulo guía mientras se dibuja una figura (tipo Paint),
+        //     SOLO para figuras rellenables
         if (figuraActual != null
-                && herramienta != Herramienta.DIBUJO_LIBRE
-                && herramienta != Herramienta.BORRADOR
-                && herramienta != Herramienta.CUBETA
-                && herramienta != Herramienta.SELECCION) {
+                && figuraActual instanceof FiguraRellenable
+                && herramienta != Herramienta.SELECCION
+                && herramienta != Herramienta.CUBETA) {
 
             Rectangle b = figuraActual.getBounds();
             if (b != null) {
@@ -877,8 +878,14 @@ public class PanelDeDibujo extends JPanel {
         // 2) Rectángulo que rodea a la selección actual (una o varias figuras)
 // 2) Rectángulo que rodea a la selección actual (una o varias figuras),
 //    solo si TODAS son rellenables
+// 2) Rectángulo que rodea a la selección actual,
+//    solo si hay 1 figura y es rellenable
         Rectangle bbSel = getBoundsSeleccionMultiple();
-        if (herramienta == Herramienta.SELECCION && bbSel != null && seleccionSoloRellenables()) {
+        if (herramienta == Herramienta.SELECCION
+                && bbSel != null
+                && seleccionMultiple.size() == 1
+                && seleccionMultiple.get(0) instanceof FiguraRellenable) {
+
             Stroke old = g2.getStroke();
             Color oldC = g2.getColor();
             float[] dash = {6f, 6f};
