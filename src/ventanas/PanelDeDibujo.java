@@ -8,7 +8,6 @@ import java.io.*;
 import java.util.*;
 import javax.imageio.ImageIO;
 
-
 public class PanelDeDibujo extends JPanel {
 
     public enum Herramienta {
@@ -133,11 +132,28 @@ public class PanelDeDibujo extends JPanel {
 
                 // ===================== SELECCIÓN =====================
                 if (herramienta == Herramienta.SELECCION) {
+
+                    // 0) Si ya hay algo seleccionado, comprobar primero si se hizo click en un handle
+                    if (seleccionMultiple != null && seleccionMultiple.size() == 1) {
+                        Figura sel = seleccionMultiple.get(0);
+                        Rectangle b = sel.getBounds();
+                        handleActivo = detectarHandle(b, p);
+
+                        if (handleActivo >= 0 && sel instanceof FiguraRellenable) {
+                            figuraSeleccionada = sel;
+                            redimensionando = true;
+                            arrastrando = false;
+                            aspectRatioInicial = calcAspect(b);
+                            pushUndo();
+                            repaint();
+                            return;
+                        }
+                    }
+
                     // 1) ¿Click dentro del grupo ya seleccionado? -> mover todo el grupo
                     Rectangle bbSel = getBoundsSeleccionMultiple();
                     if (bbSel != null && bbSel.contains(p)) {
                         figuraSeleccionada = null;
-                        handleActivo = -1;
                         redimensionando = false;
                         arrastrando = true;
 
@@ -162,6 +178,7 @@ public class PanelDeDibujo extends JPanel {
                         handleActivo = detectarHandle(figuraSeleccionada.getBounds(), p);
                         if (handleActivo >= 0 && figuraSeleccionada instanceof FiguraRellenable) {
                             redimensionando = true;
+                            arrastrando = false;
                             aspectRatioInicial = calcAspect(figuraSeleccionada.getBounds());
                             pushUndo();
                         } else {
@@ -486,6 +503,16 @@ public class PanelDeDibujo extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+
+                if (figuraActual != null
+                        && herramienta != Herramienta.DIBUJO_LIBRE
+                        && herramienta != Herramienta.BORRADOR
+                        && herramienta != Herramienta.CUBETA) {
+
+                    figuraSeleccionada = figuraActual;
+                    seleccionMultiple.clear();
+                    seleccionMultiple.add(figuraSeleccionada);
+                }
                 figuraActual = null;
                 arrastrando = false;
                 redimensionando = false;
@@ -528,7 +555,6 @@ public class PanelDeDibujo extends JPanel {
 
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
-
 
         // Atajos de teclado
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "del");
@@ -806,7 +832,35 @@ public class PanelDeDibujo extends JPanel {
         for (Figura f : figuras) {
             f.dibujar(g2);
         }
+//---------------------------------------------------------------------------------
+        // 1.5) Rectángulo guía mientras se dibuja una figura (tipo Paint)
+        if (figuraActual != null
+                && herramienta != Herramienta.DIBUJO_LIBRE
+                && herramienta != Herramienta.BORRADOR
+                && herramienta != Herramienta.CUBETA
+                && herramienta != Herramienta.SELECCION) {
 
+            Rectangle b = figuraActual.getBounds();
+            if (b != null) {
+                Stroke old = g2.getStroke();
+                Color oldC = g2.getColor();
+                float[] dash = {4f, 4f};
+                g2.setColor(new Color(0, 120, 215));
+                g2.setStroke(new BasicStroke(
+                        1.0f,
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER,
+                        10f,
+                        dash,
+                        0f
+                ));
+                g2.drawRect(b.x, b.y, b.width, b.height);
+                g2.setStroke(old);
+                g2.setColor(oldC);
+            }
+        }
+
+//----------------------------------------------------  
         // Silueta del borrador (overlay)
         if (herramienta == Herramienta.SELECCION && seleccionando && rectSeleccionTemporal != null) {
             Stroke old = g2.getStroke();
@@ -821,8 +875,10 @@ public class PanelDeDibujo extends JPanel {
         }
 
         // 2) Rectángulo que rodea a la selección actual (una o varias figuras)
+// 2) Rectángulo que rodea a la selección actual (una o varias figuras),
+//    solo si TODAS son rellenables
         Rectangle bbSel = getBoundsSeleccionMultiple();
-        if (herramienta == Herramienta.SELECCION && bbSel != null) {
+        if (herramienta == Herramienta.SELECCION && bbSel != null && seleccionSoloRellenables()) {
             Stroke old = g2.getStroke();
             Color oldC = g2.getColor();
             float[] dash = {6f, 6f};
@@ -834,8 +890,8 @@ public class PanelDeDibujo extends JPanel {
         }
 
         // 3) Si solo hay una figura seleccionada y es rellenable, muestra los handles (como antes)
-        if (herramienta == Herramienta.SELECCION
-                && figuraSeleccionada != null
+        // 3) Si solo hay una figura seleccionada y es rellenable, muestra los handles
+        if (figuraSeleccionada != null
                 && seleccionMultiple.size() == 1
                 && figuraSeleccionada instanceof FiguraRellenable) {
 
@@ -1271,6 +1327,21 @@ public class PanelDeDibujo extends JPanel {
         g.setComposite(AlphaComposite.Clear);
         g.fillRect(x, y, w, h);
         g.dispose();
+    }
+
+    /**
+     * Indica si todas las figuras seleccionadas son rellenables.
+     */
+    private boolean seleccionSoloRellenables() {
+        if (seleccionMultiple == null || seleccionMultiple.isEmpty()) {
+            return false;
+        }
+        for (Figura f : seleccionMultiple) {
+            if (!(f instanceof FiguraRellenable)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

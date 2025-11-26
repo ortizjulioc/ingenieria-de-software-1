@@ -7,7 +7,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-
 public class VentanaDeDibujo extends JFrame {
 
     private final PanelDeDibujo panel;          // Vista de lienzo 
@@ -17,11 +16,9 @@ public class VentanaDeDibujo extends JFrame {
     private JPanel panelPropiedades;
     private boolean propsVisible = true;
 
-   
     private Color colorLinea = Color.BLACK;
     private Color colorRelleno = null;
 
-    
     private final JLabel statusLabel = new JLabel("Listo");
 
     public VentanaDeDibujo() {
@@ -42,22 +39,34 @@ public class VentanaDeDibujo extends JFrame {
         getContentPane().add(crearPanelPropiedades(), BorderLayout.EAST);
         getContentPane().add(crearStatusBar(), BorderLayout.SOUTH);
 
-        
         MouseAdapter mouseStatus = new MouseAdapter() {
-            @Override public void mouseMoved(MouseEvent e) { updateStatus(e.getPoint()); }
-            @Override public void mouseDragged(MouseEvent e) { updateStatus(e.getPoint()); }
-            @Override public void mouseExited(MouseEvent e) { statusLabel.setText(dimTexto()); }
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                updateStatus(e.getPoint());
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                updateStatus(e.getPoint());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                statusLabel.setText(dimTexto());
+            }
         };
         panel.addMouseMotionListener(mouseStatus);
         panel.addMouseListener(mouseStatus);
 
-        
         colorLinea = modelo.getColorLinea();
         colorRelleno = modelo.getColorRelleno();
     }
 
     private void updateStatus(Point p) {
-        if (p == null) { statusLabel.setText(dimTexto()); return; }
+        if (p == null) {
+            statusLabel.setText(dimTexto());
+            return;
+        }
         statusLabel.setText("x: " + p.x + "  y: " + p.y + "   |   " + dimTexto());
     }
 
@@ -76,14 +85,22 @@ public class VentanaDeDibujo extends JFrame {
                 int r = JOptionPane.showConfirmDialog(this,
                         "¿Deseas guardar los cambios actuales?",
                         "Nuevo dibujo", JOptionPane.YES_NO_CANCEL_OPTION);
-                if (r == JOptionPane.CANCEL_OPTION || r == JOptionPane.CLOSED_OPTION) return;
+                if (r == JOptionPane.CANCEL_OPTION || r == JOptionPane.CLOSED_OPTION) {
+                    return;
+                }
                 if (r == JOptionPane.YES_OPTION) {
                     JFileChooser fc = new JFileChooser();
                     fc.setDialogTitle("Guardar proyecto");
                     if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                        try { controller.guardarProyecto(fc.getSelectedFile()); }
-                        catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage()); return; }
-                    } else return;
+                        try {
+                            controller.guardarProyecto(fc.getSelectedFile());
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage());
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
                 }
             }
             controller.limpiarLienzo();
@@ -94,13 +111,18 @@ public class VentanaDeDibujo extends JFrame {
                 int r = JOptionPane.showConfirmDialog(this,
                         "Tienes cambios sin guardar. ¿Continuar y descartarlos?",
                         "Abrir proyecto", JOptionPane.YES_NO_OPTION);
-                if (r != JOptionPane.YES_OPTION) return;
+                if (r != JOptionPane.YES_OPTION) {
+                    return;
+                }
             }
             JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Abrir proyecto");
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try { controller.abrirProyecto(fc.getSelectedFile()); }
-                catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al abrir: " + ex.getMessage()); }
+                try {
+                    controller.abrirProyecto(fc.getSelectedFile());
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Error al abrir: " + ex.getMessage());
+                }
             }
         });
         JMenuItem itGuardar = new JMenuItem("Guardar proyecto...");
@@ -108,8 +130,11 @@ public class VentanaDeDibujo extends JFrame {
             JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Guardar proyecto");
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try { controller.guardarProyecto(fc.getSelectedFile()); }
-                catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage()); }
+                try {
+                    controller.guardarProyecto(fc.getSelectedFile());
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage());
+                }
             }
         });
         JMenuItem itExportar = new JMenuItem("Exportar PNG...");
@@ -117,8 +142,11 @@ public class VentanaDeDibujo extends JFrame {
             JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Exportar como PNG");
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try { controller.exportarComoPNG(fc.getSelectedFile()); }
-                catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error al exportar: " + ex.getMessage()); }
+                try {
+                    controller.exportarComoPNG(fc.getSelectedFile());
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Error al exportar: " + ex.getMessage());
+                }
             }
         });
 
@@ -141,7 +169,9 @@ public class VentanaDeDibujo extends JFrame {
         JMenuItem itLimpiar = new JMenuItem("Limpiar todo");
         itLimpiar.addActionListener(e -> {
             int r = JOptionPane.showConfirmDialog(this, "¿Borrar todo el lienzo?", "Limpiar", JOptionPane.YES_NO_OPTION);
-            if (r == JOptionPane.YES_OPTION) controller.limpiarLienzo();
+            if (r == JOptionPane.YES_OPTION) {
+                controller.limpiarLienzo();
+            }
         });
 
         mEditar.add(itUndo);
@@ -153,7 +183,6 @@ public class VentanaDeDibujo extends JFrame {
         mEditar.add(itLimpiar);
         mb.add(mEditar);
 
-        
         JMenu mAyuda = new JMenu("Ayuda");
         JMenuItem itGuia = new JMenuItem("Guía de uso");
         itGuia.addActionListener(e -> mostrarDialogoAyuda());
@@ -167,165 +196,192 @@ public class VentanaDeDibujo extends JFrame {
         return mb;
     }
 
- 
     private JToolBar crearToolbar() {
-    JToolBar tb = new JToolBar();
-    tb.setFloatable(false);
-    tb.setRollover(true);
-    tb.setBorder(new EmptyBorder(6, 8, 6, 8));
-    tb.setBackground(new Color(245, 247, 250));
-    tb.addSeparator(new Dimension(12,0));
+        JToolBar tb = new JToolBar();
+        tb.setFloatable(false);
+        tb.setRollover(true);
+        tb.setBorder(new EmptyBorder(6, 8, 6, 8));
+        tb.setBackground(new Color(245, 247, 250));
+        tb.addSeparator(new Dimension(12, 0));
 
-    // Helper de estilo
-    java.util.function.Consumer<AbstractButton> stylize = btn -> {
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
-        btn.setOpaque(true);
-        btn.setBackground(new Color(245, 247, 250));
-        btn.addChangeListener(e -> {
-            if (btn.isSelected()) btn.setBackground(new Color(225, 230, 236));
-        });
-        btn.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) {
-                if(!btn.isSelected()) btn.setBackground(new Color(232, 236, 240));
-            }
-            @Override public void mouseExited(MouseEvent e) {
-                if(!btn.isSelected()) btn.setBackground(new Color(245, 247, 250));
-            }
-        });
-    };
-
-    ButtonGroup group = new ButtonGroup();
-
-    // Grupo 1 - Herramientas básicas
-    JToggleButton btSel = new JToggleButton(new ShapeIcon(IconType.CURSOR));
-    btSel.setToolTipText("Selección (V)");
-    btSel.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.SELECCION));
-    btSel.setSelected(true);
-    stylize.accept(btSel); group.add(btSel); tb.add(btSel);
-
-    JToggleButton btLapiz = new JToggleButton(new ShapeIcon(IconType.PENCIL));
-    btLapiz.setToolTipText("Dibujo libre (B)");
-    btLapiz.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.DIBUJO_LIBRE));
-    stylize.accept(btLapiz); group.add(btLapiz); tb.add(btLapiz);
-
-    JToggleButton btBorr = new JToggleButton(new ShapeIcon(IconType.ERASER));
-    btBorr.setToolTipText("Borrador (E)");
-    btBorr.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.BORRADOR));
-    stylize.accept(btBorr); group.add(btBorr); tb.add(btBorr);
-
-    tb.addSeparator(new Dimension(12,0));
-
-    // Grupo 2 – Figuras (menú)
-    JButton btFig = new JButton(new ShapeIcon(IconType.SHAPES));
-    btFig.setToolTipText("Figuras");
-    stylize.accept(btFig);
-    JPopupMenu menuFig = crearMenuFiguras(group, btSel, btLapiz, btBorr);
-    btFig.addActionListener(e -> menuFig.show(btFig, 0, btFig.getHeight()));
-    tb.add(btFig);
-
-    tb.addSeparator(new Dimension(12,0));
-
-    // Grupo 3 – Colores
-    ColorSwatchButton swLinea = new ColorSwatchButton(colorLinea);
-    swLinea.setToolTipText("Color de línea");
-    swLinea.addActionListener(e -> {
-        Color c = JColorChooser.showDialog(this, "Selecciona color de línea", colorLinea);
-        if (c != null) { colorLinea = c; controller.setColorLinea(c); swLinea.setColor(c); }
-    });
-    tb.add(swLinea);
-
-    ColorSwatchButton swRelleno = new ColorSwatchButton(colorRelleno);
-    swRelleno.setToolTipText("Color de relleno");
-    swRelleno.addActionListener(e -> {
-        Color c = JColorChooser.showDialog(this, "Selecciona color de relleno", colorRelleno);
-        if (c != null) { colorRelleno = c; controller.setColorRelleno(c); swRelleno.setColor(c); }
-    });
-    tb.add(swRelleno);
-    
-    // Botón "Sin relleno"
-JButton btSinRelleno = new JButton("Sin relleno");
-stylize.accept(btSinRelleno);
-btSinRelleno.addActionListener(e -> {
-    colorRelleno = null;
-    controller.setColorRelleno(null);
-    swRelleno.setColor(null);  // el swatch queda "vacío"
-});
-tb.add(btSinRelleno);
-
-    JToggleButton btCubeta = new JToggleButton(new ShapeIcon(IconType.BUCKET));
-    btCubeta.setToolTipText("Cubeta de pintura");
-    stylize.accept(btCubeta); group.add(btCubeta); tb.add(btCubeta);
-    btCubeta.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.CUBETA));
-
-    tb.addSeparator(new Dimension(12,0));
-
-    // ========== BOTONES DE IMAGEN ==========
-    // Declarar los botones
-    final JButton btEliminarImg = new JButton("Eliminar imagen");
-    final JButton btRecortarImg = new JButton("Recortar imagen");
-    final JButton btInsertarImg = new JButton("Insertar imagen");
-
-    // Aplicar estilo
-    stylize.accept(btInsertarImg);
-    stylize.accept(btEliminarImg);
-    stylize.accept(btRecortarImg);
-
-    // Inicialmente deshabilitados (no hay imagen)
-    btEliminarImg.setEnabled(false);
-    btRecortarImg.setEnabled(false);
-
-    // BOTÓN INSERTAR
-    btInsertarImg.addActionListener(e -> {
-        panel.cargarImagen(this);
-        boolean tieneImg = panel.tieneImagen();
-        btEliminarImg.setEnabled(tieneImg);
-        btRecortarImg.setEnabled(tieneImg);
-    });
-
-    // BOTÓN RECORTAR
-    btRecortarImg.addActionListener(e -> {
-        if (panel.tieneImagen()) {
-            panel.activarModoRecorte();
-            JOptionPane.showMessageDialog(this, 
-                "Arrastra el mouse sobre la imagen para seleccionar el área a recortar.\nSuelta el mouse para aplicar el recorte.",
-                "Modo Recorte", JOptionPane.INFORMATION_MESSAGE);
-
-            // Verificar estado después del recorte
-            SwingUtilities.invokeLater(() -> {
-                boolean tieneImg = panel.tieneImagen();
-                btEliminarImg.setEnabled(tieneImg);
-                btRecortarImg.setEnabled(tieneImg);
+        // Helper de estilo
+        java.util.function.Consumer<AbstractButton> stylize = btn -> {
+            btn.setFocusPainted(false);
+            btn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+            btn.setOpaque(true);
+            btn.setBackground(new Color(245, 247, 250));
+            btn.addChangeListener(e -> {
+                if (btn.isSelected()) {
+                    // Color más marcado cuando está activo
+                    btn.setBackground(new Color(200, 220, 255));
+                } else {
+                    btn.setBackground(new Color(245, 247, 250));
+                }
             });
-        }
-    });
+            btn.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    if (!btn.isSelected()) {
+                        btn.setBackground(new Color(232, 236, 240));
+                    }
+                }
 
-    // BOTÓN ELIMINAR
-    btEliminarImg.addActionListener(e -> {
-        if (panel.tieneImagen()) {
-            panel.eliminarImagenYContenido();
-            btEliminarImg.setEnabled(false);
-            btRecortarImg.setEnabled(false);
-        }
-    });
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    if (!btn.isSelected()) {
+                        btn.setBackground(new Color(245, 247, 250));
+                    }
+                }
+            });
+        };
 
-    // Agregar botones a la toolbar
-    tb.add(btInsertarImg);
-    tb.add(btRecortarImg);
-    tb.add(btEliminarImg);
-    // ========== FIN BOTONES DE IMAGEN ==========
+        ButtonGroup group = new ButtonGroup();
 
-    tb.addSeparator(new Dimension(12,0));
+        // Grupo 1 - Herramientas básicas
+        JToggleButton btSel = new JToggleButton(new ShapeIcon(IconType.CURSOR));
+        btSel.setToolTipText("Selección (V)");
+        btSel.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.SELECCION));
+        btSel.setSelected(true);
+        stylize.accept(btSel);
+        group.add(btSel);
+        tb.add(btSel);
 
-    // Grupo 4 – Propiedades
-    JButton toggleProps = new JButton(new ShapeIcon(IconType.PANELS));
-    toggleProps.setToolTipText("Mostrar/Ocultar propiedades");
-    stylize.accept(toggleProps);
-    toggleProps.addActionListener(e -> togglePropiedades());
-    tb.add(toggleProps);
+        JToggleButton btLapiz = new JToggleButton(new ShapeIcon(IconType.PENCIL));
+        btLapiz.setToolTipText("Dibujo libre (B)");
+        btLapiz.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.DIBUJO_LIBRE));
+        stylize.accept(btLapiz);
+        group.add(btLapiz);
+        tb.add(btLapiz);
 
-    return tb;
-}
+        JToggleButton btBorr = new JToggleButton(new ShapeIcon(IconType.ERASER));
+        btBorr.setToolTipText("Borrador (E)");
+        btBorr.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.BORRADOR));
+        stylize.accept(btBorr);
+        group.add(btBorr);
+        tb.add(btBorr);
+
+        tb.addSeparator(new Dimension(12, 0));
+
+        // Grupo 2 – Figuras (menú)
+        JButton btFig = new JButton(new ShapeIcon(IconType.SHAPES));
+        btFig.setToolTipText("Figuras");
+        stylize.accept(btFig);
+        JPopupMenu menuFig = crearMenuFiguras(group, btSel, btLapiz, btBorr);
+        btFig.addActionListener(e -> menuFig.show(btFig, 0, btFig.getHeight()));
+        tb.add(btFig);
+
+        tb.addSeparator(new Dimension(12, 0));
+
+        // Grupo 3 – Colores
+        ColorSwatchButton swLinea = new ColorSwatchButton(colorLinea);
+        swLinea.setToolTipText("Color de línea");
+        swLinea.addActionListener(e -> {
+            Color c = JColorChooser.showDialog(this, "Selecciona color de línea", colorLinea);
+            if (c != null) {
+                colorLinea = c;
+                controller.setColorLinea(c);
+                swLinea.setColor(c);
+            }
+        });
+        tb.add(swLinea);
+
+        ColorSwatchButton swRelleno = new ColorSwatchButton(colorRelleno);
+        swRelleno.setToolTipText("Color de relleno");
+        swRelleno.addActionListener(e -> {
+            Color c = JColorChooser.showDialog(this, "Selecciona color de relleno", colorRelleno);
+            if (c != null) {
+                colorRelleno = c;
+                controller.setColorRelleno(c);
+                swRelleno.setColor(c);
+            }
+        });
+        tb.add(swRelleno);
+
+        // Botón "Sin relleno"
+        JButton btSinRelleno = new JButton("Sin relleno");
+        stylize.accept(btSinRelleno);
+        btSinRelleno.addActionListener(e -> {
+            colorRelleno = null;
+            controller.setColorRelleno(null);
+            swRelleno.setColor(null);  // el swatch queda "vacío"
+        });
+        tb.add(btSinRelleno);
+
+        JToggleButton btCubeta = new JToggleButton(new ShapeIcon(IconType.BUCKET));
+        btCubeta.setToolTipText("Cubeta de pintura");
+        stylize.accept(btCubeta);
+        group.add(btCubeta);
+        tb.add(btCubeta);
+        btCubeta.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.CUBETA));
+
+        tb.addSeparator(new Dimension(12, 0));
+
+        // ========== BOTONES DE IMAGEN ==========
+        // Declarar los botones
+        final JButton btEliminarImg = new JButton("Eliminar imagen");
+        final JButton btRecortarImg = new JButton("Recortar imagen");
+        final JButton btInsertarImg = new JButton("Insertar imagen");
+
+        // Aplicar estilo
+        stylize.accept(btInsertarImg);
+        stylize.accept(btEliminarImg);
+        stylize.accept(btRecortarImg);
+
+        // Inicialmente deshabilitados (no hay imagen)
+        btEliminarImg.setEnabled(false);
+        btRecortarImg.setEnabled(false);
+
+        // BOTÓN INSERTAR
+        btInsertarImg.addActionListener(e -> {
+            panel.cargarImagen(this);
+            boolean tieneImg = panel.tieneImagen();
+            btEliminarImg.setEnabled(tieneImg);
+            btRecortarImg.setEnabled(tieneImg);
+        });
+
+        // BOTÓN RECORTAR
+        btRecortarImg.addActionListener(e -> {
+            if (panel.tieneImagen()) {
+                panel.activarModoRecorte();
+                JOptionPane.showMessageDialog(this,
+                        "Arrastra el mouse sobre la imagen para seleccionar el área a recortar.\nSuelta el mouse para aplicar el recorte.",
+                        "Modo Recorte", JOptionPane.INFORMATION_MESSAGE);
+
+                // Verificar estado después del recorte
+                SwingUtilities.invokeLater(() -> {
+                    boolean tieneImg = panel.tieneImagen();
+                    btEliminarImg.setEnabled(tieneImg);
+                    btRecortarImg.setEnabled(tieneImg);
+                });
+            }
+        });
+
+        // BOTÓN ELIMINAR
+        btEliminarImg.addActionListener(e -> {
+            if (panel.tieneImagen()) {
+                panel.eliminarImagenYContenido();
+                btEliminarImg.setEnabled(false);
+                btRecortarImg.setEnabled(false);
+            }
+        });
+
+        // Agregar botones a la toolbar
+        tb.add(btInsertarImg);
+        tb.add(btRecortarImg);
+        tb.add(btEliminarImg);
+        // ========== FIN BOTONES DE IMAGEN ==========
+
+        tb.addSeparator(new Dimension(12, 0));
+
+        // Grupo 4 – Propiedades
+        JButton toggleProps = new JButton(new ShapeIcon(IconType.PANELS));
+        toggleProps.setToolTipText("Mostrar/Ocultar propiedades");
+        stylize.accept(toggleProps);
+        toggleProps.addActionListener(e -> togglePropiedades());
+        tb.add(toggleProps);
+
+        return tb;
+    }
 
     private void togglePropiedades() {
         propsVisible = !propsVisible;
@@ -378,7 +434,9 @@ tb.add(btSinRelleno);
         JMenuItem it = new JMenuItem(name, new ShapeIcon(icon));
         it.addActionListener(e -> {
             controller.setHerramienta(tool);
-            for (JToggleButton b : toUnselect) b.setSelected(false);
+            for (JToggleButton b : toUnselect) {
+                b.setSelected(false);
+            }
         });
         return it;
     }
@@ -394,7 +452,8 @@ tb.add(btSinRelleno);
         c.insets = new Insets(8, 10, 8, 10);
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0; c.gridy = 0;
+        c.gridx = 0;
+        c.gridy = 0;
 
         // Grosor pincel
         panelPropiedades.add(new JLabel("Grosor pincel"), c);
@@ -421,7 +480,10 @@ tb.add(btSinRelleno);
         ColorSwatchButton swBorr = new ColorSwatchButton(Color.WHITE);
         swBorr.addActionListener(e -> {
             Color cPick = JColorChooser.showDialog(this, "Selecciona color de borrador", swBorr.getColor());
-            if (cPick != null) { swBorr.setColor(cPick); controller.setColorBorrador(cPick); }
+            if (cPick != null) {
+                swBorr.setColor(cPick);
+                controller.setColorBorrador(cPick);
+            }
         });
         panelPropiedades.add(swBorr, c);
 
@@ -456,7 +518,8 @@ tb.add(btSinRelleno);
         panelPropiedades.add(swRellenoProp, c);
 
         // Spacer
-        c.gridy++; c.weighty = 1.0;
+        c.gridy++;
+        c.weighty = 1.0;
         panelPropiedades.add(Box.createVerticalGlue(), c);
 
         return panelPropiedades;
@@ -483,12 +546,22 @@ tb.add(btSinRelleno);
     }
 
     static class ShapeIcon implements Icon {
+
         private final IconType type;
         private final int w, h;
-        ShapeIcon(IconType t) { this(t, 18, 18); }
-        ShapeIcon(IconType t, int w, int h) { this.type = t; this.w = w; this.h = h; }
 
-        @Override public void paintIcon(Component c, Graphics g, int x, int y) {
+        ShapeIcon(IconType t) {
+            this(t, 18, 18);
+        }
+
+        ShapeIcon(IconType t, int w, int h) {
+            this.type = t;
+            this.w = w;
+            this.h = h;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.translate(x, y);
@@ -496,50 +569,145 @@ tb.add(btSinRelleno);
             g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
             switch (type) {
-                case CURSOR -> { Polygon p = new Polygon(new int[]{2, 2, 12}, new int[]{2, 14, 8}, 3); g2.fillPolygon(p); }
-                case PENCIL -> { g2.drawLine(2, h-4, w-6, 4); g2.fillRect(w-8, 2, 4, 4); g2.fillRect(2, h-6, 4, 4); }
-                case ERASER -> { g2.drawRoundRect(2, 4, w-6, h-8, 4, 4); g2.drawLine(5, h-4, w-6, h-4); }
-                case SHAPES -> { g2.drawRect(1, 1, 9, 9); g2.drawOval(7, 7, 10, 10); }
-                case BUCKET -> { g2.drawRect(4, 2, 10, 8); g2.drawLine(4, 6, 14, 6); g2.fillOval(2, 12, 6, 4); }
-                case PANELS -> { g2.drawRect(2, 2, w-4, h-4); g2.drawLine(2, 8, w-2, 8); g2.drawLine(w/2, 8, w/2, h-2); }
+                case CURSOR -> {
+                    Polygon p = new Polygon(new int[]{2, 2, 12}, new int[]{2, 14, 8}, 3);
+                    g2.fillPolygon(p);
+                }
+                case PENCIL -> {
+                    g2.drawLine(2, h - 4, w - 6, 4);
+                    g2.fillRect(w - 8, 2, 4, 4);
+                    g2.fillRect(2, h - 6, 4, 4);
+                }
+                case ERASER -> {
+                    g2.drawRoundRect(2, 4, w - 6, h - 8, 4, 4);
+                    g2.drawLine(5, h - 4, w - 6, h - 4);
+                }
+                case SHAPES -> {
+                    g2.drawRect(1, 1, 9, 9);
+                    g2.drawOval(7, 7, 10, 10);
+                }
+                case BUCKET -> {
+                    g2.drawRect(4, 2, 10, 8);
+                    g2.drawLine(4, 6, 14, 6);
+                    g2.fillOval(2, 12, 6, 4);
+                }
+                case PANELS -> {
+                    g2.drawRect(2, 2, w - 4, h - 4);
+                    g2.drawLine(2, 8, w - 2, 8);
+                    g2.drawLine(w / 2, 8, w / 2, h - 2);
+                }
 
-                case CAT_BASIC -> { g2.drawRect(2, 2, 6, 6); g2.drawOval(10, 10, 6, 6); }
-                case CAT_COMPLEX -> { g2.drawOval(2, 2, 6, 6); drawStar(g2, 13, 6, 6, 3, 5); }
-                case CAT_ARROWS -> { g2.drawLine(3, h/2, w-3, h/2); g2.drawLine(w-6, h/2-3, w-3, h/2); g2.drawLine(w-6, h/2+3, w-3, h/2); }
-                case CAT_MISC -> { g2.drawOval(3, 6, 6, 5); g2.drawArc(11, 4, 6, 10, 200, 140); }
+                case CAT_BASIC -> {
+                    g2.drawRect(2, 2, 6, 6);
+                    g2.drawOval(10, 10, 6, 6);
+                }
+                case CAT_COMPLEX -> {
+                    g2.drawOval(2, 2, 6, 6);
+                    drawStar(g2, 13, 6, 6, 3, 5);
+                }
+                case CAT_ARROWS -> {
+                    g2.drawLine(3, h / 2, w - 3, h / 2);
+                    g2.drawLine(w - 6, h / 2 - 3, w - 3, h / 2);
+                    g2.drawLine(w - 6, h / 2 + 3, w - 3, h / 2);
+                }
+                case CAT_MISC -> {
+                    g2.drawOval(3, 6, 6, 5);
+                    g2.drawArc(11, 4, 6, 10, 200, 140);
+                }
 
-                case LINE -> { g2.drawLine(2, h-4, w-2, 4); }
-                case RECT -> { g2.drawRect(3, 3, w-6, h-6); }
-                case CIRC -> { g2.drawOval(3, 3, w-6, h-6); }
-                case OVAL -> { g2.drawOval(2, 5, w-4, h-10); }
-                case TRI -> { Polygon tri = new Polygon(new int[]{w/2, 3, w-3}, new int[]{3, h-3, h-3}, 3); g2.drawPolygon(tri); }
-                case HEART -> { g2.drawArc(3, 3, 6, 6, 0, 180); g2.drawArc(9, 3, 6, 6, 0, 180); g2.drawLine(3, 6, w/2, h-3); g2.drawLine(w-3, 6, w/2, h-3); }
-                case RHOMB -> { Polygon rh = new Polygon(new int[]{w/2, w-4, w/2, 4}, new int[]{3, h/2, h-3, h/2}, 4); g2.drawPolygon(rh); }
-                case TRAP -> { Polygon trp = new Polygon(new int[]{4, w-4, w-6, 6}, new int[]{h-4, h-4, 4, 4}, 4); g2.drawPolygon(trp); }
+                case LINE -> {
+                    g2.drawLine(2, h - 4, w - 2, 4);
+                }
+                case RECT -> {
+                    g2.drawRect(3, 3, w - 6, h - 6);
+                }
+                case CIRC -> {
+                    g2.drawOval(3, 3, w - 6, h - 6);
+                }
+                case OVAL -> {
+                    g2.drawOval(2, 5, w - 4, h - 10);
+                }
+                case TRI -> {
+                    Polygon tri = new Polygon(new int[]{w / 2, 3, w - 3}, new int[]{3, h - 3, h - 3}, 3);
+                    g2.drawPolygon(tri);
+                }
+                case HEART -> {
+                    g2.drawArc(3, 3, 6, 6, 0, 180);
+                    g2.drawArc(9, 3, 6, 6, 0, 180);
+                    g2.drawLine(3, 6, w / 2, h - 3);
+                    g2.drawLine(w - 3, 6, w / 2, h - 3);
+                }
+                case RHOMB -> {
+                    Polygon rh = new Polygon(new int[]{w / 2, w - 4, w / 2, 4}, new int[]{3, h / 2, h - 3, h / 2}, 4);
+                    g2.drawPolygon(rh);
+                }
+                case TRAP -> {
+                    Polygon trp = new Polygon(new int[]{4, w - 4, w - 6, 6}, new int[]{h - 4, h - 4, 4, 4}, 4);
+                    g2.drawPolygon(trp);
+                }
                 case PENTA -> {
                     Polygon p5 = new Polygon();
-                    p5.addPoint(w/2, 3); p5.addPoint(w-4, h/2-2); p5.addPoint(w-8, h-3); p5.addPoint(8, h-3); p5.addPoint(4, h/2-2);
+                    p5.addPoint(w / 2, 3);
+                    p5.addPoint(w - 4, h / 2 - 2);
+                    p5.addPoint(w - 8, h - 3);
+                    p5.addPoint(8, h - 3);
+                    p5.addPoint(4, h / 2 - 2);
                     g2.drawPolygon(p5);
                 }
                 case HEXA -> {
                     Polygon p6 = new Polygon();
-                    p6.addPoint(4, h/2); p6.addPoint(8, 3); p6.addPoint(w-8, 3); p6.addPoint(w-4, h/2);
-                    p6.addPoint(w-8, h-3); p6.addPoint(8, h-3);
+                    p6.addPoint(4, h / 2);
+                    p6.addPoint(8, 3);
+                    p6.addPoint(w - 8, 3);
+                    p6.addPoint(w - 4, h / 2);
+                    p6.addPoint(w - 8, h - 3);
+                    p6.addPoint(8, h - 3);
                     g2.drawPolygon(p6);
                 }
-                case STAR -> { drawStar(g2, w/2, h/2, 7, 3, 5); }
-                case ARROW_UP -> { g2.drawLine(w/2, 3, w/2, h-4); g2.drawLine(w/2, 3, 4, 8); g2.drawLine(w/2, 3, w-4, 8); }
-                case ARROW_DOWN -> { g2.drawLine(w/2, 4, w/2, h-3); g2.drawLine(w/2, h-3, 4, h-8); g2.drawLine(w/2, h-3, w-4, h-8); }
-                case ARROW_LEFT -> { g2.drawLine(3, h/2, w-4, h/2); g2.drawLine(3, h/2, 8, 4); g2.drawLine(3, h/2, 8, h-4); }
-                case ARROW_RIGHT -> { g2.drawLine(4, h/2, w-3, h/2); g2.drawLine(w-3, h/2, w-8, 4); g2.drawLine(w-3, h/2, w-8, h-4); }
-                case CLOUD -> { g2.drawOval(3, 8, 6, 5); g2.drawOval(7, 6, 6, 6); g2.drawOval(10, 8, 6, 5); }
-                case ARC -> { g2.drawArc(3, 3, w-6, h-6, 200, 140); }
+                case STAR -> {
+                    drawStar(g2, w / 2, h / 2, 7, 3, 5);
+                }
+                case ARROW_UP -> {
+                    g2.drawLine(w / 2, 3, w / 2, h - 4);
+                    g2.drawLine(w / 2, 3, 4, 8);
+                    g2.drawLine(w / 2, 3, w - 4, 8);
+                }
+                case ARROW_DOWN -> {
+                    g2.drawLine(w / 2, 4, w / 2, h - 3);
+                    g2.drawLine(w / 2, h - 3, 4, h - 8);
+                    g2.drawLine(w / 2, h - 3, w - 4, h - 8);
+                }
+                case ARROW_LEFT -> {
+                    g2.drawLine(3, h / 2, w - 4, h / 2);
+                    g2.drawLine(3, h / 2, 8, 4);
+                    g2.drawLine(3, h / 2, 8, h - 4);
+                }
+                case ARROW_RIGHT -> {
+                    g2.drawLine(4, h / 2, w - 3, h / 2);
+                    g2.drawLine(w - 3, h / 2, w - 8, 4);
+                    g2.drawLine(w - 3, h / 2, w - 8, h - 4);
+                }
+                case CLOUD -> {
+                    g2.drawOval(3, 8, 6, 5);
+                    g2.drawOval(7, 6, 6, 6);
+                    g2.drawOval(10, 8, 6, 5);
+                }
+                case ARC -> {
+                    g2.drawArc(3, 3, w - 6, h - 6, 200, 140);
+                }
             }
             g2.dispose();
         }
 
-        @Override public int getIconWidth() { return w; }
-        @Override public int getIconHeight() { return h; }
+        @Override
+        public int getIconWidth() {
+            return w;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return h;
+        }
 
         private void drawStar(Graphics2D g2, int cx, int cy, int rOuter, int rInner, int points) {
             double angle = Math.PI / points;
@@ -557,7 +725,9 @@ tb.add(btSinRelleno);
 
     // ==== Swatch de color ====
     static class ColorSwatchButton extends JButton {
+
         private Color color;
+
         ColorSwatchButton(Color c) {
             this.color = c;
             setPreferredSize(new Dimension(28, 28));
@@ -568,29 +738,38 @@ tb.add(btSinRelleno);
             setBackground(Color.WHITE);
             setToolTipText("Click para elegir color");
         }
-        public void setColor(Color c) { this.color = c; repaint(); }
-        public Color getColor() { return color; }
-        @Override protected void paintComponent(Graphics g) {
+
+        public void setColor(Color c) {
+            this.color = c;
+            repaint();
+        }
+
+        public Color getColor() {
+            return color;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(color != null ? color : Color.WHITE);
-            g2.fillRoundRect(5, 5, getWidth()-10, getHeight()-10, 6, 6);
+            g2.fillRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 6, 6);
             g2.setColor(new Color(120, 120, 120));
-            g2.drawRoundRect(5, 5, getWidth()-10, getHeight()-10, 6, 6);
+            g2.drawRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 6, 6);
         }
     }
 
     // ==== Diálogos de ayuda (ya existentes en tu versión previa) ====
     private void mostrarDialogoAyuda() {
-    JFrame dlg = new JFrame("Guía de uso"); // <- cambiado
-    dlg.setSize(720, 600);
-    dlg.setLocationRelativeTo(this);
-    dlg.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    dlg.setExtendedState(JFrame.NORMAL); // permite maximizar
+        JFrame dlg = new JFrame("Guía de uso"); // <- cambiado
+        dlg.setSize(720, 600);
+        dlg.setLocationRelativeTo(this);
+        dlg.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        dlg.setExtendedState(JFrame.NORMAL); // permite maximizar
 
-    String accent = "#4F46E5";
-    String text = """
+        String accent = "#4F46E5";
+        String text = """
     <html><head><style>
     body{font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111827;margin:0}
     .wrap{padding:20px 22px}.hero{background:#F5F7FA;border-bottom:1px solid #E5E7EB;padding:18px 22px}
@@ -627,28 +806,27 @@ tb.add(btSinRelleno);
     </div></body></html>
     """.formatted(accent, accent);
 
-    JEditorPane html = new JEditorPane("text/html", text);
-    html.setEditable(false);
-    html.setBorder(null);
+        JEditorPane html = new JEditorPane("text/html", text);
+        html.setEditable(false);
+        html.setBorder(null);
 
-    JScrollPane scroll = new JScrollPane(html);
-    scroll.setBorder(null);
-    scroll.getVerticalScrollBar().setUnitIncrement(16);
+        JScrollPane scroll = new JScrollPane(html);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
 
-    dlg.setContentPane(scroll);
-    dlg.setVisible(true);
-}
-
+        dlg.setContentPane(scroll);
+        dlg.setVisible(true);
+    }
 
     private void mostrarDialogoAcercaDe() {
-    JFrame dlg = new JFrame("Acerca de");  // <- cambiado
-    dlg.setSize(520, 420);
-    dlg.setLocationRelativeTo(this);
-    dlg.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    dlg.setExtendedState(JFrame.NORMAL); // permite maximizar
+        JFrame dlg = new JFrame("Acerca de");  // <- cambiado
+        dlg.setSize(520, 420);
+        dlg.setLocationRelativeTo(this);
+        dlg.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        dlg.setExtendedState(JFrame.NORMAL); // permite maximizar
 
-    String accent = "#4F46E5";
-    String text = """
+        String accent = "#4F46E5";
+        String text = """
     <html><head><style>
     body{font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111827;margin:0}
     .wrap{padding:20px 22px}.hero{background:#F5F7FA;border-bottom:1px solid #E5E7EB;padding:18px 22px}
@@ -671,18 +849,17 @@ tb.add(btSinRelleno);
     </div></body></html>
     """.formatted(accent);
 
-    JEditorPane html = new JEditorPane("text/html", text);
-    html.setEditable(false);
-    html.setBorder(null);
+        JEditorPane html = new JEditorPane("text/html", text);
+        html.setEditable(false);
+        html.setBorder(null);
 
-    JScrollPane scroll = new JScrollPane(html);
-    scroll.setBorder(null);
-    scroll.getVerticalScrollBar().setUnitIncrement(16);
+        JScrollPane scroll = new JScrollPane(html);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
 
-    dlg.setContentPane(scroll);
-    dlg.setVisible(true);
-}
-
+        dlg.setContentPane(scroll);
+        dlg.setVisible(true);
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new VentanaDeDibujo().setVisible(true));
