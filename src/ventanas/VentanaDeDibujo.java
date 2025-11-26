@@ -273,6 +273,9 @@ public class VentanaDeDibujo extends JFrame {
         tb.addSeparator(new Dimension(12, 0));
 
         // Grupo 3 – Colores
+        tb.addSeparator(new Dimension(12, 0));
+
+// ----- Color de línea -----
         ColorSwatchButton swLinea = new ColorSwatchButton(colorLinea);
         swLinea.setToolTipText("Color de línea");
         swLinea.addActionListener(e -> {
@@ -285,6 +288,7 @@ public class VentanaDeDibujo extends JFrame {
         });
         tb.add(swLinea);
 
+// ----- Color de relleno -----
         ColorSwatchButton swRelleno = new ColorSwatchButton(colorRelleno);
         swRelleno.setToolTipText("Color de relleno");
         swRelleno.addActionListener(e -> {
@@ -297,24 +301,34 @@ public class VentanaDeDibujo extends JFrame {
         });
         tb.add(swRelleno);
 
-        // Botón "Sin relleno"
+// ----- Botón "Sin relleno" -----
         JButton btSinRelleno = new JButton("Sin relleno");
+        btSinRelleno.setToolTipText("Quitar relleno (usar solo contorno)");
         stylize.accept(btSinRelleno);
         btSinRelleno.addActionListener(e -> {
             colorRelleno = null;
             controller.setColorRelleno(null);
-            swRelleno.setColor(null);  // el swatch queda "vacío"
+            // Si tu ColorSwatchButton acepta null, lo dejas así;
+            // si no, puedes poner un color neutro o indicar sin relleno
+            swRelleno.setColor(null);
         });
         tb.add(btSinRelleno);
 
-        JToggleButton btCubeta = new JToggleButton(new ShapeIcon(IconType.BUCKET));
-        btCubeta.setToolTipText("Cubeta de pintura");
+// ----- Cubeta -----
+// ----- Cubeta -----
+        ImageIcon iconCubeta = new ImageIcon(
+                getClass().getResource("/recursos/iconos/cubeta3.png")
+        // Si tu imagen está directo en recursos, usa: "/recursos/cubeta.png"
+        );
+
+        JToggleButton btCubeta = new JToggleButton(iconCubeta);
+        btCubeta.setToolTipText("Cubeta (rellenar área cerrada)");
         stylize.accept(btCubeta);
         group.add(btCubeta);
+        btCubeta.addActionListener(e
+                -> controller.setHerramienta(ModeloDibujo.Herramienta.CUBETA)
+        );
         tb.add(btCubeta);
-        btCubeta.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.CUBETA));
-
-        tb.addSeparator(new Dimension(12, 0));
 
         // ========== BOTONES DE IMAGEN ==========
         // Declarar los botones
