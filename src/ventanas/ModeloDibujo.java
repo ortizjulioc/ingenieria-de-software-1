@@ -27,7 +27,7 @@ public class ModeloDibujo {
 
     private Herramienta herramienta = Herramienta.SELECCION;
     private Color colorLinea = Color.BLACK;
-    private Color colorRelleno = Color.WHITE;
+    private Color colorRelleno = null;
     private float grosorPincel = 2f;
     private float tamBorrador = 12f;
     private Color colorBorrador = Color.WHITE;

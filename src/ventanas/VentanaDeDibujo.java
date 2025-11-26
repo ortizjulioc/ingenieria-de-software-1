@@ -19,7 +19,7 @@ public class VentanaDeDibujo extends JFrame {
 
    
     private Color colorLinea = Color.BLACK;
-    private Color colorRelleno = Color.WHITE;
+    private Color colorRelleno = null;
 
     
     private final JLabel statusLabel = new JLabel("Listo");
@@ -242,6 +242,16 @@ public class VentanaDeDibujo extends JFrame {
         if (c != null) { colorRelleno = c; controller.setColorRelleno(c); swRelleno.setColor(c); }
     });
     tb.add(swRelleno);
+    
+    // Botón "Sin relleno"
+JButton btSinRelleno = new JButton("Sin relleno");
+stylize.accept(btSinRelleno);
+btSinRelleno.addActionListener(e -> {
+    colorRelleno = null;
+    controller.setColorRelleno(null);
+    swRelleno.setColor(null);  // el swatch queda "vacío"
+});
+tb.add(btSinRelleno);
 
     JToggleButton btCubeta = new JToggleButton(new ShapeIcon(IconType.BUCKET));
     btCubeta.setToolTipText("Cubeta de pintura");
