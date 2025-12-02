@@ -2,8 +2,11 @@ package ventanas;
 
 import java.awt.*;
 import java.awt.geom.Path2D;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 
 public class Hexagono extends Figura implements FiguraRellenable {
+
     private static final long serialVersionUID = 1L;
     private Point inicio;
     private Color colorRelleno;
@@ -15,20 +18,46 @@ public class Hexagono extends Figura implements FiguraRellenable {
 
     private Shape buildShape() {
         int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
-        double cx = x + w/2.0, cy = y + h/2.0;
-        double r = Math.min(w, h) / 2.0;
+
+        if (w <= 0 || h <= 0) {
+            return new Path2D.Double();
+        }
+
+        // 1) Hexágono unidad en 0..1
         Path2D p = new Path2D.Double();
+        double cx = 0.5;
+        double cy = 0.5;
+        double r = 0.5;
+
         for (int i = 0; i < 6; i++) {
-            double ang = -Math.PI/2 + i * 2*Math.PI/6;
+            double ang = -Math.PI / 2 + i * 2 * Math.PI / 6;
             double px = cx + r * Math.cos(ang);
             double py = cy + r * Math.sin(ang);
-            if (i == 0) p.moveTo(px, py); else p.lineTo(px, py);
+            if (i == 0) {
+                p.moveTo(px, py);
+            } else {
+                p.lineTo(px, py);
+            }
         }
         p.closePath();
-        return p;
+
+        // 2) Bounds reales del hexágono unidad
+        Rectangle2D ub = p.getBounds2D();
+
+        // 3) Escalar para que llene exactamente el rectángulo bounds
+        double sx = w / ub.getWidth();
+        double sy = h / ub.getHeight();
+
+        AffineTransform at = new AffineTransform();
+        at.translate(x, y);              // mover al rectángulo destino
+        at.scale(sx, sy);                // escalar
+        at.translate(-ub.getX(), -ub.getY()); // ajustar al origen de su propio bounds
+
+        return at.createTransformedShape(p);
     }
 
-    @Override public void dibujar(Graphics g) {
+    @Override
+    public void dibujar(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Shape s = buildShape();
@@ -37,22 +66,27 @@ public class Hexagono extends Figura implements FiguraRellenable {
             g2.setColor(colorRelleno);
             g2.fill(s);
         }
-        
-        g2.setColor(colorLinea);   g2.draw(s);
+
+        g2.setColor(colorLinea);
+        g2.draw(s);
     }
 
-    @Override public void actualizar(Point puntoActual) {
+    @Override
+    public void actualizar(Point puntoActual) {
         setBoundsNormalized(inicio.x, inicio.y, puntoActual.x, puntoActual.y);
     }
 
-    @Override public void desplazar(int dx, int dy) {
+    @Override
+    public void desplazar(int dx, int dy) {
         bounds = new Rectangle(bounds.x + dx, bounds.y + dy, bounds.width, bounds.height);
         inicio = new Point(inicio.x + dx, inicio.y + dy);
     }
 
-    @Override public Figura clonarConDesplazamiento(int dx, int dy) {
+    @Override
+    public Figura clonarConDesplazamiento(int dx, int dy) {
         Hexagono h = new Hexagono(new Point(inicio.x + dx, inicio.y + dy));
-        h.colorLinea = this.colorLinea; h.colorRelleno = this.colorRelleno;
+        h.colorLinea = this.colorLinea;
+        h.colorRelleno = this.colorRelleno;
         h.bounds = new Rectangle(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height);
         return h;
     }

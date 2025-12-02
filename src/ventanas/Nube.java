@@ -3,9 +3,11 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
-
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 
 public class Nube extends Figura implements FiguraRellenable {
+
     private static final long serialVersionUID = 1L;
 
     private Point inicio;
@@ -16,32 +18,42 @@ public class Nube extends Figura implements FiguraRellenable {
         setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-   
     private Shape buildShape() {
-        double x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
+        int x = bounds.x;
+        int y = bounds.y;
+        int w = bounds.width;
+        int h = bounds.height;
+
+        if (w <= 0 || h <= 0) {
+            return new Area();
+        }
+
+        // 1) Construimos una nube "unidad" en coordenadas relativas (0..1)
         Area nube = new Area();
 
-       
-        // Círculo izquierdo
-        nube.add(new Area(new Ellipse2D.Double(x + w * 0.05, y + h * 0.40, w * 0.30, h * 0.30)));
+        // Estos números son los mismos porcentajes que usabas, pero
+        // ahora en un espacio 0..1 en lugar de usar w y h directamente.
+        nube.add(new Area(new Ellipse2D.Double(0.05, 0.40, 0.30, 0.30))); // círculo izquierdo
+        nube.add(new Area(new Ellipse2D.Double(0.30, 0.20, 0.30, 0.30))); // sup. izq
+        nube.add(new Area(new Ellipse2D.Double(0.05, 0.20, 0.30, 0.30))); // sup. central-izq
+        nube.add(new Area(new Ellipse2D.Double(0.30, 0.20, 0.30, 0.40))); // sup. der
+        nube.add(new Area(new Ellipse2D.Double(0.25, 0.40, 0.30, 0.40))); // der
+        nube.add(new Area(new Ellipse2D.Double(0.30, 0.20, 0.40, 0.30))); // inf. centro 1
+        nube.add(new Area(new Ellipse2D.Double(0.30, 0.40, 0.40, 0.30))); // inf. centro 2
 
-        // Círculo superior izquierdo
-        nube.add(new Area(new Ellipse2D.Double(x + w * 0.30, y + h * 0.20, w * 0.30, h * 0.30)));
+        // 2) Bounds de esa nube unidad
+        Rectangle2D ub = nube.getBounds2D();
 
-        // Círculo superior "central-izq" (según snippet había dos con misma zona superior)
-        nube.add(new Area(new Ellipse2D.Double(x + w * 0.05, y + h * 0.20, w * 0.30, h * 0.30)));
+        // 3) Escalamos para que esa nube llene EXACTAMENTE (x, y, w, h)
+        double sx = w / ub.getWidth();
+        double sy = h / ub.getHeight();
 
-        // Círculo superior derecho (ligeramente más alto)
-        nube.add(new Area(new Ellipse2D.Double(x + w * 0.30, y + h * 0.20, w * 0.30, h * 0.40)));
+        AffineTransform at = new AffineTransform();
+        at.translate(x, y);          // mover al rectángulo destino
+        at.scale(sx, sy);            // escalar
+        at.translate(-ub.getX(), -ub.getY()); // alinear el origen con el bounds de la nube
 
-        // Círculo derecho
-        nube.add(new Area(new Ellipse2D.Double(x + w * 0.25, y + h * 0.40, w * 0.30, h * 0.40)));
-
-        // Círculo inferior central (dos refuerzos inferiores)
-        nube.add(new Area(new Ellipse2D.Double(x + w * 0.30, y + h * 0.20, w * 0.40, h * 0.30)));
-        nube.add(new Area(new Ellipse2D.Double(x + w * 0.30, y + h * 0.40, w * 0.40, h * 0.30)));
-
-        return nube;
+        return at.createTransformedShape(nube);
     }
 
     @Override
@@ -55,8 +67,8 @@ public class Nube extends Figura implements FiguraRellenable {
         if (colorRelleno != null) {
             g2.setColor(getColorRelleno());
             g2.fill(s);
-        } 
-        
+        }
+
         g2.setColor(getColorLinea());
         g2.setStroke(new BasicStroke(2f));
         g2.draw(s);
