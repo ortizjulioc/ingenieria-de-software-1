@@ -28,11 +28,8 @@ public class Nube extends Figura implements FiguraRellenable {
             return new Area();
         }
 
-        // 1) Construimos una nube "unidad" en coordenadas relativas (0..1)
         Area nube = new Area();
 
-        // Estos números son los mismos porcentajes que usabas, pero
-        // ahora en un espacio 0..1 en lugar de usar w y h directamente.
         nube.add(new Area(new Ellipse2D.Double(0.05, 0.40, 0.30, 0.30))); // círculo izquierdo
         nube.add(new Area(new Ellipse2D.Double(0.30, 0.20, 0.30, 0.30))); // sup. izq
         nube.add(new Area(new Ellipse2D.Double(0.05, 0.20, 0.30, 0.30))); // sup. central-izq
@@ -41,17 +38,15 @@ public class Nube extends Figura implements FiguraRellenable {
         nube.add(new Area(new Ellipse2D.Double(0.30, 0.20, 0.40, 0.30))); // inf. centro 1
         nube.add(new Area(new Ellipse2D.Double(0.30, 0.40, 0.40, 0.30))); // inf. centro 2
 
-        // 2) Bounds de esa nube unidad
         Rectangle2D ub = nube.getBounds2D();
 
-        // 3) Escalamos para que esa nube llene EXACTAMENTE (x, y, w, h)
         double sx = w / ub.getWidth();
         double sy = h / ub.getHeight();
 
         AffineTransform at = new AffineTransform();
-        at.translate(x, y);          // mover al rectángulo destino
-        at.scale(sx, sy);            // escalar
-        at.translate(-ub.getX(), -ub.getY()); // alinear el origen con el bounds de la nube
+        at.translate(x, y);          
+        at.scale(sx, sy);           
+        at.translate(-ub.getX(), -ub.getY()); 
 
         return at.createTransformedShape(nube);
     }
@@ -63,7 +58,6 @@ public class Nube extends Figura implements FiguraRellenable {
 
         Shape s = buildShape();
 
-        // Rellenar solo si hay color
         if (colorRelleno != null) {
             g2.setColor(getColorRelleno());
             g2.fill(s);

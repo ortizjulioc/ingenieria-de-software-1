@@ -3,8 +3,8 @@ package ventanas;
 import java.awt.*;
 import java.awt.geom.Path2D;
 
-
 public class Corazon extends Figura implements FiguraRellenable {
+
     private static final long serialVersionUID = 1L;
 
     private Point inicio;
@@ -15,42 +15,36 @@ public class Corazon extends Figura implements FiguraRellenable {
         setBoundsNormalized(inicio.x, inicio.y, inicio.x, inicio.y);
     }
 
-  
     private Shape buildShape() {
         int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
         double cx = x + w / 2.0;
         double topY = y + h * 0.3;
 
         Path2D path = new Path2D.Double();
-        // Punta inferior (centro abajo)
         path.moveTo(cx, y + h);
 
-        // CURVA 1: lado izquierdo
         path.curveTo(
-                cx - w * 0.1, y + h * 0.9,  // Control 1
-                x,            y + h * 0.6,  // Control 2
-                x,            topY          // Fin
+                cx - w * 0.1, y + h * 0.9,
+                x, y + h * 0.6,
+                x, topY
         );
 
-        // CURVA 2: lóbulo superior izquierdo
         path.curveTo(
-                x,            y - h * 0.1,   // Control 1 (sube)
-                cx - w * 0.15, y - h * 0.1,  // Control 2 (arriba)
-                cx,           topY           // Fin (centro superior)
+                x, y - h * 0.1,
+                cx - w * 0.15, y - h * 0.1,
+                cx, topY
         );
 
-        // CURVA 3: lóbulo superior derecho
         path.curveTo(
-                cx + w * 0.15, y - h * 0.1,  // Control 1 (arriba)
-                x + w,         y - h * 0.1,  // Control 2 (sube)
-                x + w,         topY          // Fin
+                cx + w * 0.15, y - h * 0.1,
+                x + w, y - h * 0.1,
+                x + w, topY
         );
 
-        // CURVA 4: lado derecho
         path.curveTo(
-                x + w,         y + h * 0.6,  // Control 1
-                cx + w * 0.1,  y + h * 0.9,  // Control 2
-                cx,            y + h         // Fin (regresa a la punta)
+                x + w, y + h * 0.6,
+                cx + w * 0.1, y + h * 0.9,
+                cx, y + h
         );
 
         path.closePath();
@@ -68,7 +62,7 @@ public class Corazon extends Figura implements FiguraRellenable {
             g2.setColor(getColorRelleno());
             g2.fill(s);
         }
-       
+
         // Contorno
         g2.setColor(getColorLinea());
         g2.setStroke(new BasicStroke(2f));

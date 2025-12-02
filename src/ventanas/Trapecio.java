@@ -15,12 +15,12 @@ public class Trapecio extends Figura implements FiguraRellenable {
 
     private Shape buildShape() {
         int x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
-        double topInset = w * 0.2; // hace la parte superior más corta
+        double topInset = w * 0.2; 
         Path2D p = new Path2D.Double();
-        p.moveTo(x + topInset, y);         // sup-izq
-        p.lineTo(x + w - topInset, y);     // sup-der
-        p.lineTo(x + w, y + h);            // inf-der
-        p.lineTo(x,     y + h);            // inf-izq
+        p.moveTo(x + topInset, y);         
+        p.lineTo(x + w - topInset, y);     
+        p.lineTo(x + w, y + h);            
+        p.lineTo(x,     y + h);            
         p.closePath();
         return p;
     }
@@ -29,7 +29,6 @@ public class Trapecio extends Figura implements FiguraRellenable {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Shape s = buildShape();
-        // Rellenar solo si hay color
         if (colorRelleno != null) {
             g2.setColor(colorRelleno);
             g2.fill(s);

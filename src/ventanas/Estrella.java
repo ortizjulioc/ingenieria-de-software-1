@@ -26,10 +26,9 @@ public class Estrella extends Figura implements FiguraRellenable {
             return new Path2D.Double();
         }
 
-        // 1) Construimos una estrella "unidad" alrededor del origen (0,0)
         Path2D unit = new Path2D.Double();
         double rOuter = 1.0;
-        double rInner = 0.5;      // relación entre punta exterior e interior
+        double rInner = 0.5;     
         int puntos = 5;
         for (int i = 0; i < 2 * puntos; i++) {
             double ang = -Math.PI / 2 + i * Math.PI / puntos;
@@ -44,18 +43,14 @@ public class Estrella extends Figura implements FiguraRellenable {
         }
         unit.closePath();
 
-        // 2) Bounds de esa estrella unidad
         Rectangle2D ub = unit.getBounds2D();
 
-        // 3) Escala para que esa estrella ocupe EXACTAMENTE el rectángulo (x,y,w,h)
         double sx = w / ub.getWidth();
         double sy = h / ub.getHeight();
 
         AffineTransform at = new AffineTransform();
-        // Primero llevamos la estrella unidad al rectángulo destino
         at.translate(x, y);
         at.scale(sx, sy);
-        // Corregimos el origen usando el bounds de la estrella unidad
         at.translate(-ub.getX(), -ub.getY());
 
         return at.createTransformedShape(unit);
@@ -66,7 +61,6 @@ public class Estrella extends Figura implements FiguraRellenable {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Shape s = buildShape();
-        // Rellenar solo si hay color
         if (colorRelleno != null) {
             g2.setColor(colorRelleno);
             g2.fill(s);

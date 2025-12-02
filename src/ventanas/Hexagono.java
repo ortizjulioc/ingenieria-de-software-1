@@ -23,7 +23,6 @@ public class Hexagono extends Figura implements FiguraRellenable {
             return new Path2D.Double();
         }
 
-        // 1) Hexágono unidad en 0..1
         Path2D p = new Path2D.Double();
         double cx = 0.5;
         double cy = 0.5;
@@ -41,17 +40,15 @@ public class Hexagono extends Figura implements FiguraRellenable {
         }
         p.closePath();
 
-        // 2) Bounds reales del hexágono unidad
         Rectangle2D ub = p.getBounds2D();
 
-        // 3) Escalar para que llene exactamente el rectángulo bounds
         double sx = w / ub.getWidth();
         double sy = h / ub.getHeight();
 
         AffineTransform at = new AffineTransform();
-        at.translate(x, y);              // mover al rectángulo destino
-        at.scale(sx, sy);                // escalar
-        at.translate(-ub.getX(), -ub.getY()); // ajustar al origen de su propio bounds
+        at.translate(x, y);              
+        at.scale(sx, sy);                
+        at.translate(-ub.getX(), -ub.getY()); 
 
         return at.createTransformedShape(p);
     }
@@ -61,7 +58,6 @@ public class Hexagono extends Figura implements FiguraRellenable {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Shape s = buildShape();
-        // Rellenar solo si hay color
         if (colorRelleno != null) {
             g2.setColor(colorRelleno);
             g2.fill(s);

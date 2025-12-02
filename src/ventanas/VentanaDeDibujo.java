@@ -27,7 +27,6 @@ public class VentanaDeDibujo extends JFrame {
         setSize(1200, 760);
         setLocationRelativeTo(null);
 
-        // ===== MVC wiring =====
         panel = new PanelDeDibujo();
         modelo = new ModeloDibujo();
         controller = new DibujoController(modelo, panel);
@@ -259,16 +258,14 @@ public class VentanaDeDibujo extends JFrame {
         tb.add(btSel);
 
 //-------------------------------------------------------------------------------------------------
-// Cargar icono PNG del lápiz
+
         ImageIcon iconLapiz = new ImageIcon(
                 getClass().getResource("/recursos/iconos/lapiz.png")
         );
 
-// Escalarlo opcionalmente a 18x18 como los otros
         Image imgLapiz = iconLapiz.getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH);
         iconLapiz = new ImageIcon(imgLapiz);
 
-// Botón del lápiz con PNG
         JToggleButton btLapiz = new JToggleButton(iconLapiz);
         btLapiz.setToolTipText("Dibujo libre (B)");
         btLapiz.addActionListener(e
@@ -283,7 +280,7 @@ public class VentanaDeDibujo extends JFrame {
                 getClass().getResource("/recursos/iconos/borrador.png")
         );
 
-// Escalar opcional
+
         Image imgBor = iconBorrador.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
         iconBorrador = new ImageIcon(imgBor);
 
@@ -298,7 +295,7 @@ public class VentanaDeDibujo extends JFrame {
 
         tb.addSeparator(new Dimension(8, 0));
 
-        // Grupo 2 – Figuras (menú)
+   
         JButton btFig = new JButton(new ShapeIcon(IconType.SHAPES));
         btFig.setToolTipText("Figuras");
         stylize.accept(btFig);
@@ -308,7 +305,7 @@ public class VentanaDeDibujo extends JFrame {
 
         tb.addSeparator(new Dimension(12, 0));
 
-        // Grupo 3 – Colores
+
         tb.addSeparator(new Dimension(12, 0));
 
 // ----- Color de línea -----
@@ -338,10 +335,9 @@ public class VentanaDeDibujo extends JFrame {
         tb.add(swRelleno);
 
 // ----- Cubeta -----
-// ----- Cubeta -----
+
         ImageIcon iconCubeta = new ImageIcon(
                 getClass().getResource("/recursos/iconos/cubeta3.png")
-        // Si tu imagen está directo en recursos, usa: "/recursos/cubeta.png"
         );
 
         JToggleButton btCubeta = new JToggleButton(iconCubeta);
@@ -365,7 +361,6 @@ public class VentanaDeDibujo extends JFrame {
         });
         tb.add(btSinRelleno);
         // ========== BOTONES DE IMAGEN ==========
-        // Declarar los botones
         final JButton btEliminarImg = new JButton("Eliminar imagen");
         final JButton btRecortarImg = new JButton("Recortar imagen");
         final JButton btInsertarImg = new JButton("Insertar imagen");
@@ -375,7 +370,6 @@ public class VentanaDeDibujo extends JFrame {
         stylize.accept(btEliminarImg);
         stylize.accept(btRecortarImg);
 
-        // Inicialmente deshabilitados (no hay imagen)
         btEliminarImg.setEnabled(false);
         btRecortarImg.setEnabled(false);
 
@@ -413,7 +407,6 @@ public class VentanaDeDibujo extends JFrame {
             }
         });
 
-        // Agregar botones a la toolbar
         tb.add(btInsertarImg);
         tb.add(btRecortarImg);
         tb.add(btEliminarImg);
@@ -438,7 +431,7 @@ public class VentanaDeDibujo extends JFrame {
         repaint();
     }
 
-    // Menú de figuras (desplegable)
+
     private JPopupMenu crearMenuFiguras(ButtonGroup group, JToggleButton... toUnselect) {
         JPopupMenu popup = new JPopupMenu();
 

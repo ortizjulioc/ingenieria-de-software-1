@@ -44,10 +44,9 @@ public class PanelDeDibujo extends JPanel {
     // Grosor del pincel para Dibujo Libre
     private float grosorActual = 2.0f;
 
-    // Borrador: tamaño y color (por defecto blanco)
+
     private float tamBorrador = 12.0f;
     private Color colorBorrador = Color.WHITE;
-    // ImageHandler gestiona la carga, visualización y limpieza de una imagen de fondo
     private ImageHandler imageHandler = new ImageHandler();
 
     private Figura figuraSeleccionada = null;
@@ -58,53 +57,39 @@ public class PanelDeDibujo extends JPanel {
 
     // Capa de relleno tipo Paint (cubeta)
     private BufferedImage fillLayer = null;
-    // Datos para mover también el relleno cuando se arrastran figuras
-    private BufferedImage fillSelection = null;     // trozo de relleno seleccionado
-    private Rectangle fillSelectionBounds = null;   // posición original del trozo
-    private Point fillSelectionOffset = new Point(0, 0); // desplazamiento acumulado
+
+    private BufferedImage fillSelection = null;     
+    private Rectangle fillSelectionBounds = null;  
+    private Point fillSelectionOffset = new Point(0, 0); 
     private double aspectRatioInicial = 1.0;
 
     private Point mousePos = null;
 
-    // ==== Selección múltiple tipo "marquee" ====
-    /**
-     * Figuras actualmente seleccionadas (una o varias).
-     */
+
     private java.util.List<Figura> seleccionMultiple = new ArrayList<>();
-    /**
-     * ¿El usuario está arrastrando un rectángulo de selección?
-     */
+
     private boolean seleccionando = false;
-    /**
-     * Punto donde empezó el arrastre de selección.
-     */
+  
     private Point inicioSeleccion = null;
-    /**
-     * Rectángulo temporal mientras se arrastra para seleccionar.
-     */
+  
     private Rectangle rectSeleccionTemporal = null;
 
     private final Deque<java.util.List<Figura>> undoStack = new ArrayDeque<>();
     private final Deque<java.util.List<Figura>> redoStack = new ArrayDeque<>();
     private boolean modificado = false;
 
-    // =====================
-    // VARIABLES PARA RECORTE DE IMAGEN (TIPO PAINT)
-    // =====================
-    // Indica si el modo recorte está activado
     private boolean cropMode = false;
 
-    // Punto donde el usuario empieza a arrastrar el mouse
+
     private Point startPoint;
 
-    // Rectángulo visual del área que se va a recortar
     private Rectangle cropRectangle;
 
     private java.util.List<Figura> portapapeles = new ArrayList<>();
 
     public PanelDeDibujo() {
 
-        imageHandler = new ImageHandler();   // MUY IMPORTANTE
+        imageHandler = new ImageHandler();   
         setBackground(Color.WHITE);
         setDoubleBuffered(true);
 
@@ -114,7 +99,7 @@ public class PanelDeDibujo extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
 
-                // Si el modo recorte está activado, se guarda el punto inicial
+  
                 if (cropMode) {
                     startPoint = e.getPoint();
                     cropRectangle = new Rectangle();
@@ -124,16 +109,14 @@ public class PanelDeDibujo extends JPanel {
                 puntoAnterior = e.getPoint();
                 Point p = puntoAnterior;
 
-                // Cubeta (flood fill)
+
                 if (herramienta == Herramienta.CUBETA) {
                     aplicarCubeta(p);
                     return;
                 }
 
-                // ===================== SELECCIÓN =====================
                 if (herramienta == Herramienta.SELECCION) {
 
-                    // 0) Si ya hay algo seleccionado, comprobar primero si se hizo click en un handle
                     if (seleccionMultiple != null && seleccionMultiple.size() == 1) {
                         Figura sel = seleccionMultiple.get(0);
                         Rectangle b = sel.getBounds();
@@ -150,14 +133,14 @@ public class PanelDeDibujo extends JPanel {
                         }
                     }
 
-                    // 1) ¿Click dentro del grupo ya seleccionado? -> mover todo el grupo
+
                     Rectangle bbSel = getBoundsSeleccionMultiple();
                     if (bbSel != null && bbSel.contains(p)) {
                         figuraSeleccionada = null;
                         redimensionando = false;
                         arrastrando = true;
 
-                        // Preparar el trozo de relleno que se mueve con el grupo
+
                         prepararSeleccionRelleno(bbSel);
 
                         pushUndo();
@@ -165,7 +148,7 @@ public class PanelDeDibujo extends JPanel {
                         return;
                     }
 
-                    // 2) ¿Click sobre una figura concreta? -> selección individual
+
                     Figura f = obtenerFiguraEnPunto(p);
                     figuraSeleccionada = f;
                     seleccionMultiple.clear();
@@ -184,13 +167,13 @@ public class PanelDeDibujo extends JPanel {
                         } else {
                             arrastrando = true;
 
-                            // Preparar relleno para una sola figura
+
                             prepararSeleccionRelleno(figuraSeleccionada.getBounds());
 
                             pushUndo();
                         }
                     } else {
-                        // 3) Click en espacio vacío -> empezar rectángulo de selección múltiple
+
                         seleccionando = true;
                         inicioSeleccion = p;
                         rectSeleccionTemporal = new Rectangle(p.x, p.y, 0, 0);
@@ -392,7 +375,7 @@ public class PanelDeDibujo extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
 
-                // Mientras arrastra en modo recorte: sólo actualizar el rectángulo y salir
+    
                 if (cropMode && startPoint != null) {
                     int x = Math.min(startPoint.x, e.getX());
                     int y = Math.min(startPoint.y, e.getY());
@@ -408,7 +391,7 @@ public class PanelDeDibujo extends JPanel {
                 Point p = e.getPoint();
 
                 if (herramienta == Herramienta.SELECCION) {
-                    // 1) Arrastrando para crear el rectángulo de selección
+
                     if (seleccionando && inicioSeleccion != null) {
                         int x = Math.min(inicioSeleccion.x, p.x);
                         int y = Math.min(inicioSeleccion.y, p.y);
@@ -421,7 +404,7 @@ public class PanelDeDibujo extends JPanel {
                         return;
                     }
 
-                    // 2) Redimensionar figura individual
+
                     if (figuraSeleccionada != null) {
                         if (redimensionando && (figuraSeleccionada instanceof Rectangulo rr)) {
                             Rectangle b = figuraSeleccionada.getBounds();
@@ -439,7 +422,7 @@ public class PanelDeDibujo extends JPanel {
                         }
                     }
 
-                    // 3) Arrastrar selección (una o varias figuras)
+
                     if (arrastrando) {
                         int dx = p.x - puntoAnterior.x;
                         int dy = p.y - puntoAnterior.y;
@@ -520,7 +503,6 @@ public class PanelDeDibujo extends JPanel {
                 handleActivo = -1;
                 puntoAnterior = null;
 
-                // Si había relleno "en el aire", pegarlo en la capa fillLayer
                 if (fillSelection != null && fillSelectionBounds != null) {
                     ensureFillLayer();
 
@@ -536,7 +518,6 @@ public class PanelDeDibujo extends JPanel {
                     fillSelectionOffset = new Point(0, 0);
                 }
 
-                // Finalizar selección tipo Paint
                 if (herramienta == Herramienta.SELECCION && seleccionando) {
                     seleccionando = false;
                     if (seleccionMultiple == null || seleccionMultiple.isEmpty()) {
@@ -557,7 +538,6 @@ public class PanelDeDibujo extends JPanel {
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
 
-        // Atajos de teclado
         getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "del");
         getActionMap().put("del", new AbstractAction() {
             @Override
@@ -637,43 +617,37 @@ public class PanelDeDibujo extends JPanel {
         cropMode = true;
     }
 
-    /**
-     * Recorta la imagen según el rectángulo que el usuario seleccionó. La
-     * imagen recortada se vuelve a escalar automáticamente al tamaño completo
-     * del lienzo.
-     */
+
     private void recortarImagen() {
 
-        // Si no hay imagen o no hay área seleccionada, salir
+
         if (!imageHandler.hasImage() || cropRectangle == null) {
             return;
         }
 
-        // Obtener la imagen original
+
         BufferedImage original = imageHandler.getImagen();
 
-        // Calcular relación entre imagen real y tamaño del panel
+
         double scaleX = (double) original.getWidth() / getWidth();
         double scaleY = (double) original.getHeight() / getHeight();
 
-        // Convertir coordenadas del panel a coordenadas reales de la imagen
+
         int x = (int) (cropRectangle.x * scaleX);
         int y = (int) (cropRectangle.y * scaleY);
         int w = (int) (cropRectangle.width * scaleX);
         int h = (int) (cropRectangle.height * scaleY);
 
-        // Evitar errores si se sale de la imagen original
+
         x = Math.max(0, x);
         y = Math.max(0, y);
         w = Math.min(w, original.getWidth() - x);
         h = Math.min(h, original.getHeight() - y);
 
-        // Crear la nueva imagen recortada
+
         BufferedImage recortada = original.getSubimage(x, y, w, h);
-        // Sustituir la imagen original por la recortada
         imageHandler.setImagen(recortada);
 
-        // Eliminar el rectángulo visual
         cropRectangle = null;
     }
 
@@ -697,14 +671,14 @@ public class PanelDeDibujo extends JPanel {
         int hs = HANDLE_SIZE;
         int x = b.x, y = b.y, w = b.width, h = b.height;
         return new Rectangle[]{
-            new Rectangle(x - hs / 2, y - hs / 2, hs, hs), // NW 0
-            new Rectangle(x + w / 2 - hs / 2, y - hs / 2, hs, hs), // N  1
-            new Rectangle(x + w - hs / 2, y - hs / 2, hs, hs), // NE 2
-            new Rectangle(x - hs / 2, y + h / 2 - hs / 2, hs, hs), // W  3
-            new Rectangle(x + w - hs / 2, y + h / 2 - hs / 2, hs, hs), // E  4
-            new Rectangle(x - hs / 2, y + h - hs / 2, hs, hs), // SW 5
-            new Rectangle(x + w / 2 - hs / 2, y + h - hs / 2, hs, hs), // S  6
-            new Rectangle(x + w - hs / 2, y + h - hs / 2, hs, hs) // SE 7
+            new Rectangle(x - hs / 2, y - hs / 2, hs, hs),
+            new Rectangle(x + w / 2 - hs / 2, y - hs / 2, hs, hs),
+            new Rectangle(x + w - hs / 2, y - hs / 2, hs, hs),
+            new Rectangle(x - hs / 2, y + h / 2 - hs / 2, hs, hs),
+            new Rectangle(x + w - hs / 2, y + h / 2 - hs / 2, hs, hs),
+            new Rectangle(x - hs / 2, y + h - hs / 2, hs, hs),
+            new Rectangle(x + w / 2 - hs / 2, y + h - hs / 2, hs, hs),
+            new Rectangle(x + w - hs / 2, y + h - hs / 2, hs, hs)
         };
     }
 
@@ -757,7 +731,6 @@ public class PanelDeDibujo extends JPanel {
             nw = (int) Math.round(nh * aspect);
         }
 
-        // Reubica segun handle para mantener la esquina opuesta fija
         switch (handle) {
             case 0 -> {
                 nx = x2 - nw;
@@ -835,21 +808,21 @@ public class PanelDeDibujo extends JPanel {
         }
 
         // === Silueta visual del borrador ===
-// Silueta del borrador (overlay visible bajo el cursor)
+
         if (herramienta == Herramienta.BORRADOR && mousePos != null) {
             Stroke oldStroke = g2.getStroke();
             Color oldColor = g2.getColor();
 
-            int d = (int) tamBorrador;          // diámetro del borrador
+            int d = (int) tamBorrador;          
             int x = mousePos.x - d / 2;
             int y = mousePos.y - d / 2;
 
-            // borde suave semitransparente
+ 
             g2.setColor(new Color(0, 0, 0, 120));
             g2.setStroke(new BasicStroke(1.5f));
             g2.drawOval(x, y, d, d);
 
-            // relleno muy suave para que se note el área
+   
             g2.setColor(new Color(0, 0, 0, 30));
             g2.fillOval(x, y, d, d);
 
@@ -858,9 +831,7 @@ public class PanelDeDibujo extends JPanel {
         }
 
 //---------------------------------------------------------------------------------
-        // 1.5) Rectángulo guía mientras se dibuja una figura (tipo Paint)
-        // 1.5) Rectángulo guía mientras se dibuja una figura (tipo Paint),
-        //     SOLO para figuras rellenables
+
         if (figuraActual != null
                 && figuraActual instanceof FiguraRellenable
                 && herramienta != Herramienta.SELECCION
@@ -900,11 +871,6 @@ public class PanelDeDibujo extends JPanel {
             g2.setColor(oldC);
         }
 
-        // 2) Rectángulo que rodea a la selección actual (una o varias figuras)
-// 2) Rectángulo que rodea a la selección actual (una o varias figuras),
-//    solo si TODAS son rellenables
-// 2) Rectángulo que rodea a la selección actual,
-//    solo si hay 1 figura y es rellenable
         Rectangle bbSel = getBoundsSeleccionMultiple();
         if (herramienta == Herramienta.SELECCION
                 && bbSel != null
@@ -921,8 +887,6 @@ public class PanelDeDibujo extends JPanel {
             g2.setColor(oldC);
         }
 
-        // 3) Si solo hay una figura seleccionada y es rellenable, muestra los handles (como antes)
-        // 3) Si solo hay una figura seleccionada y es rellenable, muestra los handles
         if (figuraSeleccionada != null
                 && seleccionMultiple.size() == 1
                 && figuraSeleccionada instanceof FiguraRellenable) {
@@ -940,20 +904,19 @@ public class PanelDeDibujo extends JPanel {
             }
         }
 
-        // 5. Área de recorte (DEBE IR AL FINAL)
+
         if (cropMode && cropRectangle != null) {
             // Oscurecer el área fuera del recorte
             Composite oldComp = g2.getComposite();
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
             g2.setColor(Color.BLACK);
 
-            // Dibujar rectángulos alrededor del área de recorte
-            g2.fillRect(0, 0, getWidth(), cropRectangle.y); // Arriba
-            g2.fillRect(0, cropRectangle.y, cropRectangle.x, cropRectangle.height); // Izquierda
+            g2.fillRect(0, 0, getWidth(), cropRectangle.y);
+            g2.fillRect(0, cropRectangle.y, cropRectangle.x, cropRectangle.height); 
             g2.fillRect(cropRectangle.x + cropRectangle.width, cropRectangle.y,
-                    getWidth() - cropRectangle.x - cropRectangle.width, cropRectangle.height); // Derecha
+                    getWidth() - cropRectangle.x - cropRectangle.width, cropRectangle.height);
             g2.fillRect(0, cropRectangle.y + cropRectangle.height,
-                    getWidth(), getHeight() - cropRectangle.y - cropRectangle.height); // Abajo
+                    getWidth(), getHeight() - cropRectangle.y - cropRectangle.height);
 
             g2.setComposite(oldComp);
 
@@ -1045,9 +1008,6 @@ public class PanelDeDibujo extends JPanel {
         }
     }
 
-    /**
-     * Devuelve todas las figuras que intersectan el rectángulo dado.
-     */
     private java.util.List<Figura> obtenerFigurasEnRectangulo(Rectangle r) {
         java.util.List<Figura> res = new ArrayList<>();
         if (r == null) {
@@ -1062,10 +1022,6 @@ public class PanelDeDibujo extends JPanel {
         return res;
     }
 
-    /**
-     * Bounding box de la selección múltiple (o null si no hay nada
-     * seleccionado).
-     */
     private Rectangle getBoundsSeleccionMultiple() {
         if (seleccionMultiple == null || seleccionMultiple.isEmpty()) {
             return null;
@@ -1092,7 +1048,7 @@ public class PanelDeDibujo extends JPanel {
     public void limpiarLienzo() {
         figuras.clear();
         figuraSeleccionada = null;
-        fillLayer = null;      // limpiamos también los rellenos de la cubeta
+        fillLayer = null;    
         modificado = true;
         repaint();
     }
@@ -1175,7 +1131,6 @@ public class PanelDeDibujo extends JPanel {
         }
     }
 
-    // Elimina la imagen actual del lienzo y todas las figuras dibujadas encima de ella
     public void eliminarImagenYContenido() {
         if (imageHandler != null && imageHandler.hasImage()) {
             pushUndo();
@@ -1197,7 +1152,7 @@ public class PanelDeDibujo extends JPanel {
 
     public void setImagen(BufferedImage img) {
         if (imageHandler != null) {
-            pushUndo(); // Guarda estado previo para undo
+            pushUndo(); 
             imageHandler.setImagen(img);
             modificado = true;
             repaint();
@@ -1216,7 +1171,6 @@ public class PanelDeDibujo extends JPanel {
     }
 
     //-------------------------------------------------
-    // Asegura que la capa de relleno tenga el tamaño del panel
     private void ensureFillLayer() {
         int w = getWidth();
         int h = getHeight();
@@ -1236,7 +1190,7 @@ public class PanelDeDibujo extends JPanel {
 // Aplica la cubeta tipo Paint usando flood fill
     private void aplicarCubeta(Point p) {
         if (colorRelleno == null) {
-            return;   // sin color de relleno, no hacemos nada
+            return;  
         }
         int w = getWidth();
         int h = getHeight();
@@ -1246,11 +1200,9 @@ public class PanelDeDibujo extends JPanel {
 
         ensureFillLayer();
 
-        // Crear snapshot con fondo + rellenos previos + figuras (para detectar bordes)
         BufferedImage snapshot = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = snapshot.createGraphics();
 
-        // Fondo
         if (imageHandler != null && imageHandler.hasImage()) {
             imageHandler.drawImage(g2, w, h);
         } else {
@@ -1258,12 +1210,10 @@ public class PanelDeDibujo extends JPanel {
             g2.fillRect(0, 0, w, h);
         }
 
-        // Rellenos ya existentes
         if (fillLayer != null) {
             g2.drawImage(fillLayer, 0, 0, null);
         }
 
-        // Figuras (sus líneas servirán de "pared" para el flood fill)
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         for (Figura f : figuras) {
             f.dibujar(g2);
@@ -1287,7 +1237,6 @@ public class PanelDeDibujo extends JPanel {
         repaint();
     }
 
-// Flood fill clásico en 4 direcciones
     private void floodFill(BufferedImage ref, BufferedImage dest,
             int x, int y, int target, int replacement) {
 
@@ -1310,7 +1259,6 @@ public class PanelDeDibujo extends JPanel {
                 continue;
             }
 
-            // Marcamos visitado y pintamos en la capa de relleno
             ref.setRGB(px, py, replacement);
             dest.setRGB(px, py, replacement);
 
@@ -1348,22 +1296,17 @@ public class PanelDeDibujo extends JPanel {
         fillSelectionBounds = new Rectangle(x, y, w, h);
         fillSelectionOffset = new Point(0, 0);
 
-        // Copiar la parte de relleno seleccionada
         fillSelection = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = fillSelection.createGraphics();
         g2.drawImage(fillLayer.getSubimage(x, y, w, h), 0, 0, null);
         g2.dispose();
 
-        // Limpiar esa zona en la capa principal
         Graphics2D g = fillLayer.createGraphics();
         g.setComposite(AlphaComposite.Clear);
         g.fillRect(x, y, w, h);
         g.dispose();
     }
 
-    /**
-     * Indica si todas las figuras seleccionadas son rellenables.
-     */
     private boolean seleccionSoloRellenables() {
         if (seleccionMultiple == null || seleccionMultiple.isEmpty()) {
             return false;

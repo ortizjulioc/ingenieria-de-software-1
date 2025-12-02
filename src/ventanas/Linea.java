@@ -2,9 +2,7 @@ package ventanas;
 
 import java.awt.*;
 
-/**
- * Figura no rellenable. No muestra bounding box ni handles.
- */
+
 public class Linea extends Figura {
     private static final long serialVersionUID = 1L;
     private Color colorRelleno;
@@ -51,7 +49,7 @@ public class Linea extends Figura {
         Linea l = new Linea(new Point(p1.x + dx, p1.y + dy));
         l.p2 = new Point(p2.x + dx, p2.y + dy);
         l.colorLinea = this.colorLinea;
-        l.colorRelleno = this.colorRelleno; // no se usa pero se conserva
+        l.colorRelleno = this.colorRelleno; 
         l.actualizarBounds();
         return l;
     }

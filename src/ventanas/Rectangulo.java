@@ -21,7 +21,7 @@ public class Rectangulo extends Figura implements FiguraRellenable {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Shape s = new Rectangle2D.Double(bounds.x, bounds.y, bounds.width, bounds.height);
-        // Rellenar solo si hay color
+
         if (colorRelleno != null) {
             g2.setColor(colorRelleno);
             g2.fill(s);
@@ -38,7 +38,6 @@ public class Rectangulo extends Figura implements FiguraRellenable {
             int w = Math.abs(dx);
             int h = (int) Math.round(w / aspectRatioInicial);
             if (h == 0) h = 1;
-            // Ajusta según sentido vertical
             if (Math.abs(dy) < h) {
                 h = Math.abs(dy);
                 w = (int) Math.round(h * aspectRatioInicial);

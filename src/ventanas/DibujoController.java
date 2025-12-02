@@ -46,7 +46,7 @@ public class DibujoController {
     public void actualizarColorRelleno(Color c) {
         Figura f = panel.getFiguraSeleccionada();
         if(f instanceof FiguraRellenable fr) {
-             fr.setColorRelleno(c);  //null = sin relleno
+             fr.setColorRelleno(c);
             panel.repaint();
     }
     }
