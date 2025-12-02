@@ -238,29 +238,65 @@ public class VentanaDeDibujo extends JFrame {
         ButtonGroup group = new ButtonGroup();
 
         // Grupo 1 - Herramientas básicas
-        JToggleButton btSel = new JToggleButton(new ShapeIcon(IconType.CURSOR));
+        // Cargar icono PNG del cursor/selección
+        ImageIcon iconSel = new ImageIcon(
+                getClass().getResource("/recursos/iconos/seleccionar.png")
+        );
+
+// Escalarlo opcionalmente a 18x18 (igual que los demás)
+        Image imgSel = iconSel.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+        iconSel = new ImageIcon(imgSel);
+
+// Botón de selección con icono PNG
+        JToggleButton btSel = new JToggleButton(iconSel);
         btSel.setToolTipText("Selección (V)");
-        btSel.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.SELECCION));
-        btSel.setSelected(true);
+        btSel.addActionListener(e
+                -> controller.setHerramienta(ModeloDibujo.Herramienta.SELECCION)
+        );
+        btSel.setSelected(false);
         stylize.accept(btSel);
         group.add(btSel);
         tb.add(btSel);
 
-        JToggleButton btLapiz = new JToggleButton(new ShapeIcon(IconType.PENCIL));
+//-------------------------------------------------------------------------------------------------
+// Cargar icono PNG del lápiz
+        ImageIcon iconLapiz = new ImageIcon(
+                getClass().getResource("/recursos/iconos/lapiz.png")
+        );
+
+// Escalarlo opcionalmente a 18x18 como los otros
+        Image imgLapiz = iconLapiz.getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH);
+        iconLapiz = new ImageIcon(imgLapiz);
+
+// Botón del lápiz con PNG
+        JToggleButton btLapiz = new JToggleButton(iconLapiz);
         btLapiz.setToolTipText("Dibujo libre (B)");
-        btLapiz.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.DIBUJO_LIBRE));
+        btLapiz.addActionListener(e
+                -> controller.setHerramienta(ModeloDibujo.Herramienta.DIBUJO_LIBRE)
+        );
         stylize.accept(btLapiz);
         group.add(btLapiz);
         tb.add(btLapiz);
 
-        JToggleButton btBorr = new JToggleButton(new ShapeIcon(IconType.ERASER));
+//---------------------------------------------------------------------------------------------------------------------
+        ImageIcon iconBorrador = new ImageIcon(
+                getClass().getResource("/recursos/iconos/borrador.png")
+        );
+
+// Escalar opcional
+        Image imgBor = iconBorrador.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+        iconBorrador = new ImageIcon(imgBor);
+
+        JToggleButton btBorr = new JToggleButton(iconBorrador);
         btBorr.setToolTipText("Borrador (E)");
-        btBorr.addActionListener(e -> controller.setHerramienta(ModeloDibujo.Herramienta.BORRADOR));
+        btBorr.addActionListener(e
+                -> controller.setHerramienta(ModeloDibujo.Herramienta.BORRADOR)
+        );
         stylize.accept(btBorr);
         group.add(btBorr);
         tb.add(btBorr);
 
-        tb.addSeparator(new Dimension(12, 0));
+        tb.addSeparator(new Dimension(8, 0));
 
         // Grupo 2 – Figuras (menú)
         JButton btFig = new JButton(new ShapeIcon(IconType.SHAPES));
