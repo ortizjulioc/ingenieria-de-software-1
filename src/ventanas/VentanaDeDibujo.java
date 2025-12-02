@@ -337,19 +337,6 @@ public class VentanaDeDibujo extends JFrame {
         });
         tb.add(swRelleno);
 
-// ----- Botón "Sin relleno" -----
-        JButton btSinRelleno = new JButton("Sin relleno");
-        btSinRelleno.setToolTipText("Quitar relleno (usar solo contorno)");
-        stylize.accept(btSinRelleno);
-        btSinRelleno.addActionListener(e -> {
-            colorRelleno = null;
-            controller.setColorRelleno(null);
-            // Si tu ColorSwatchButton acepta null, lo dejas así;
-            // si no, puedes poner un color neutro o indicar sin relleno
-            swRelleno.setColor(null);
-        });
-        tb.add(btSinRelleno);
-
 // ----- Cubeta -----
 // ----- Cubeta -----
         ImageIcon iconCubeta = new ImageIcon(
@@ -365,7 +352,18 @@ public class VentanaDeDibujo extends JFrame {
                 -> controller.setHerramienta(ModeloDibujo.Herramienta.CUBETA)
         );
         tb.add(btCubeta);
-
+// ----- Botón "Sin relleno" -----
+        JButton btSinRelleno = new JButton("Sin relleno");
+        btSinRelleno.setToolTipText("Quitar relleno (usar solo contorno)");
+        stylize.accept(btSinRelleno);
+        btSinRelleno.addActionListener(e -> {
+            colorRelleno = null;
+            controller.setColorRelleno(null);
+            // Si tu ColorSwatchButton acepta null, lo dejas así;
+            // si no, puedes poner un color neutro o indicar sin relleno
+            swRelleno.setColor(null);
+        });
+        tb.add(btSinRelleno);
         // ========== BOTONES DE IMAGEN ==========
         // Declarar los botones
         final JButton btEliminarImg = new JButton("Eliminar imagen");
