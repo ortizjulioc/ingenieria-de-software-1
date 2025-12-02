@@ -5,8 +5,8 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Borrador extends Figura {
+
     private static final long serialVersionUID = 1L;
     private Color colorRelleno;
 
@@ -19,8 +19,13 @@ public class Borrador extends Figura {
         bounds = new Rectangle(inicio.x, inicio.y, 1, 1);
     }
 
-    public void setTamBorrador(float t) { this.tamBorrador = Math.max(1f, t); }
-    public float getTamBorrador() { return tamBorrador; }
+    public void setTamBorrador(float t) {
+        this.tamBorrador = Math.max(1f, t);
+    }
+
+    public float getTamBorrador() {
+        return tamBorrador;
+    }
 
     public void agregarPunto(Point p) {
         puntos.add(p);
@@ -29,18 +34,30 @@ public class Borrador extends Figura {
 
     @Override
     public void dibujar(Graphics g) {
-        if (puntos.size() < 2) return;
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(colorLinea != null ? colorLinea : Color.WHITE);
-        g2.setStroke(new BasicStroke(tamBorrador, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-        Point prev = puntos.get(0);
+        // 1) Guardar el stroke actual
+        Stroke oldStroke = g2.getStroke();
+
+        // 2) Configurar stroke SOLO para el borrador
+        g2.setColor(colorLinea); // color del borrador (normalmente colorBorrador)
+        g2.setStroke(new BasicStroke(
+                tamBorrador, // grosor = tamaño borrador
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND
+        ));
+
+        // 3) Dibujar el camino del borrador (tu lógica actual)
+        //    Ejemplo típico:
         for (int i = 1; i < puntos.size(); i++) {
-            Point p = puntos.get(i);
-            g2.draw(new Line2D.Float(prev.x, prev.y, p.x, p.y));
-            prev = p;
+            Point p1 = puntos.get(i - 1);
+            Point p2 = puntos.get(i);
+            g2.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
+
+        // 4) Restaurar el stroke original
+        g2.setStroke(oldStroke);
     }
 
     @Override
@@ -71,7 +88,9 @@ public class Borrador extends Figura {
     }
 
     private void actualizarBounds() {
-        if (puntos.isEmpty()) return;
+        if (puntos.isEmpty()) {
+            return;
+        }
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
         for (Point p : puntos) {
