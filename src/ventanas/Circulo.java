@@ -39,15 +39,37 @@ public class Circulo extends Figura implements FiguraRellenable {
     }
 
     @Override
-
     public void actualizar(Point puntoActual) {
-        // 1) Primero obtenemos el rectángulo normalizado según el arrastre
-        setBoundsNormalized(inicio.x, inicio.y, puntoActual.x, puntoActual.y);
+        int x0 = inicio.x;
+        int y0 = inicio.y;
+        int x1 = puntoActual.x;
+        int y1 = puntoActual.y;
 
-        // 2) Forzamos que sea un cuadrado usando el lado mínimo,
-        //    pero SIN mover la esquina superior izquierda
-        int d = Math.min(bounds.width, bounds.height);
-        bounds = new Rectangle(bounds.x, bounds.y, d, d);
+        int w = Math.abs(x1 - x0);
+        int h = Math.abs(y1 - y0);
+        int d = Math.min(w, h);   // lado del cuadrado
+
+        int nx, ny;
+
+        if (x1 >= x0 && y1 >= y0) {
+            // arrastrando hacia abajo-derecha
+            nx = x0;
+            ny = y0;
+        } else if (x1 < x0 && y1 >= y0) {
+            // abajo-izquierda
+            nx = x0 - d;
+            ny = y0;
+        } else if (x1 >= x0 && y1 < y0) {
+            // arriba-derecha
+            nx = x0;
+            ny = y0 - d;
+        } else {
+            // arriba-izquierda
+            nx = x0 - d;
+            ny = y0 - d;
+        }
+
+        bounds = new Rectangle(nx, ny, d, d);
     }
 
     @Override

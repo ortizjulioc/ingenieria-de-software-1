@@ -400,6 +400,7 @@ public class PanelDeDibujo extends JPanel {
                     int h = Math.abs(startPoint.y - e.getY());
 
                     cropRectangle = new Rectangle(x, y, w, h);
+
                     repaint();
                     return;
                 }
@@ -832,6 +833,30 @@ public class PanelDeDibujo extends JPanel {
         for (Figura f : figuras) {
             f.dibujar(g2);
         }
+
+        // === Silueta visual del borrador ===
+// Silueta del borrador (overlay visible bajo el cursor)
+        if (herramienta == Herramienta.BORRADOR && mousePos != null) {
+            Stroke oldStroke = g2.getStroke();
+            Color oldColor = g2.getColor();
+
+            int d = (int) tamBorrador;          // diámetro del borrador
+            int x = mousePos.x - d / 2;
+            int y = mousePos.y - d / 2;
+
+            // borde suave semitransparente
+            g2.setColor(new Color(0, 0, 0, 120));
+            g2.setStroke(new BasicStroke(1.5f));
+            g2.drawOval(x, y, d, d);
+
+            // relleno muy suave para que se note el área
+            g2.setColor(new Color(0, 0, 0, 30));
+            g2.fillOval(x, y, d, d);
+
+            g2.setStroke(oldStroke);
+            g2.setColor(oldColor);
+        }
+
 //---------------------------------------------------------------------------------
         // 1.5) Rectángulo guía mientras se dibuja una figura (tipo Paint)
         // 1.5) Rectángulo guía mientras se dibuja una figura (tipo Paint),
