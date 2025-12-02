@@ -22,7 +22,7 @@ public class VentanaDeDibujo extends JFrame {
     private final JLabel statusLabel = new JLabel("Listo");
 
     public VentanaDeDibujo() {
-        super("Editor de Dibujo 2D – MVC");
+        super("Editor de Dibujo 2D"); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 760);
         setLocationRelativeTo(null);
